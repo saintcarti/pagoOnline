@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4 text-center">Productos en tendencia</h2>
+
+  <div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for product in products %}
+      <div class="col">
+        <div class="card h-100 text-center" style="max-width: 450px; margin: auto;">
+          <img src="{{ product.image }}" class="card-img-top" style="max-height: 300px;" alt="{{ product.name }}">
+          <div class="card-body">
+            <h5 class="card-title">{{ product.name }}</h5>
+            <p class="card-text">Precio: ${{ product.price }}</p>
+            <form method="POST" action="{% url 'add_to_cart' product.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary">Agregar al carrito</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p class="text-center">No hay productos disponibles.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
