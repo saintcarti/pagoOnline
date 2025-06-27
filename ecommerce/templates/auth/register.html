@@ -1,0 +1,52 @@
+{%load static%}
+
+<link rel="stylesheet" href="{%static 'css/register.css'%}">
+
+<form method="POST" action="">
+    {% csrf_token %}
+    <h5 style="color: #5A3E2B;">Registro de Usuario</h5>
+
+    <div class="mb-3">
+        <label style="color: #5A3E2B;" for="username" class="form-label">Nombre de usuario:</label>
+        <input id="username" name="username" class="form-control" type="text" placeholder="Nombre de usuario:" value="{{ request.POST.username }}">
+    </div>
+
+    <div class="mb-3">
+        <label style="color: #5A3E2B;" for="email" class="form-label">Correo electrónico:</label>
+        <input id="email" name="email" type="email" class="form-control" placeholder="Correo electrónico:" value="{{ request.POST.email }}">
+    </div>
+
+    <div class="mb-3">
+        <label style="color: #5A3E2B;" for="password" class="form-label">Contraseña:</label>
+        <input id="password" name="password" type="password" class="form-control" placeholder="Contraseña">
+    </div>
+
+    <div class="mb-3">
+        <label style="color: #5A3E2B;" for="rut" class="form-label">RUT:</label>
+        <input id="rut" name="rut" type="text" class="form-control" placeholder="RUT" value="{{ request.POST.rut }}">
+    </div>
+
+    <div class="mb-3">
+        <label style="color: #5A3E2B;" for="telefono" class="form-label">Teléfono:</label>
+        <input id="telefono" name="telefono" type="text" class="form-control" placeholder="Teléfono" value="{{ request.POST.telefono }}">
+    </div>
+
+    <div class="mb-3">
+        <label style="color: #5A3E2B;" for="direccion" class="form-label">Dirección:</label>
+        <input id="direccion" name="direccion" type="text" class="form-control" placeholder="Dirección" value="{{ request.POST.direccion }}">
+    </div>
+
+    {% if error %}
+        <div style="color: red; margin-top: 10px;">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <div style="margin-top: 30px;">
+        <button type="submit" class="btn btn-dark" style="border-radius: 12px; padding: 8px 30px; border: 1px solid black;">Registrarse</button>
+
+        <p style="color: #5A3E2B;" class="footer-text">
+            ¿Ya tienes cuenta? <a href="{%url 'login-page'%}">Inicia sesión aquí</a>
+        </p>
+    </div>
+</form>

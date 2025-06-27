@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar Compra</title>
+    <style>
+        .checkout-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .checkout-item {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        .checkout-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+        .total-section {
+            text-align: right;
+            margin: 20px 0;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-container">
+        <h1>Finalizar Compra</h1>
+        
+        <h2>Resumen de tu pedido:</h2>
+        
+        {% for item in cart_items %}
+            <div class="checkout-item">
+                <img src="{{ item.product.image }}" alt="{{ item.product.name }}">
+                <div>
+                    <h3>{{ item.product.name }}</h3>
+                    <p>Cantidad: {{ item.quantity }}</p>
+                    <p>Precio unitario: ${{ item.product.price }}</p>
+                    <p>Subtotal: ${{ item.total_price }}</p>
+                </div>
+            </div>
+        {% endfor %}
+        
+        <div class="total-section">
+            <p>Total a pagar: ${{ total }}</p>
+        </div>
+        
+        {{ paypal.render }}
+    </div>
+</body>
+</html>

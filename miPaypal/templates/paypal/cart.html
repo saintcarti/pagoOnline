@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras</title>
+    <style>
+        .cart-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .cart-item {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        .cart-item img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin-right: 20px;
+        }
+        .item-details {
+            flex-grow: 1;
+        }
+        .quantity-control {
+            display: flex;
+            align-items: center;
+        }
+        .quantity-control input {
+            width: 50px;
+            text-align: center;
+            margin: 0 10px;
+        }
+        .total-section {
+            text-align: right;
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .checkout-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="cart-container">
+        <h1>Tu Carrito de Compras</h1>
+        
+        {% if cart_items %}
+            {% for item in cart_items %}
+                <div class="cart-item">
+                    <img src="{{ item.product.image }}" alt="{{ item.product.name }}">
+                    <div class="item-details">
+                        <h3>{{ item.product.name }}</h3>
+                        <p>{{ item.product.description|truncatewords:20 }}</p>
+                        <p>Precio unitario: ${{ item.product.price }}</p>
+                        
+                        <form method="post" action="{% url 'update_cart_item' item.id %}">
+                            {% csrf_token %}
+                            <div class="quantity-control">
+                                <button type="button" onclick="this.parentNode.querySelector('input[type=number]').stepDown()">-</button>
+                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1">
+                                <button type="button" onclick="this.parentNode.querySelector('input[type=number]').stepUp()">+</button>
+                                <button type="submit">Actualizar</button>
+                            </div>
+                        </form>
+                        
+                        <p>Total: ${{ item.total_price }}</p>
+                        <a href="{% url 'remove_from_cart' item.id %}">Eliminar</a>
+                    </div>
+                </div>
+            {% endfor %}
+            
+            <div class="total-section">
+                <p>Total del Carrito: ${{ total }}</p>
+            </div>
+            
+            <a href="{% url 'checkout' %}" class="checkout-btn">Proceder al Pago</a>
+        {% else %}
+            <p>Tu carrito está vacío.</p>
+            <a href="/">Seguir comprando</a>
+        {% endif %}
+    </div>
+</body>
+</html>

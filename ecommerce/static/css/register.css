@@ -1,0 +1,33 @@
+h2 {
+     
+    margin-bottom: 25px;
+  }
+  
+  label {
+    display: block;
+    text-align: left;
+    margin-bottom: 5px;
+    color: black;
+    
+  }
+  
+  input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: none;
+    font-size: 14px;
+  }
+  
+  .btn-primary:hover {
+    background-color: #9e1e1e;
+  }
+  
+  .footer-text {
+    margin-top: 20px;
+    color: #212121; 
+  }
+  
+  
+  

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago Exitoso</title>
+    <style>
+        .success-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .success-icon {
+            font-size: 5em;
+            color: #28a745;
+            margin: 20px 0;
+        }
+        .purchased-items {
+            margin: 30px 0;
+            text-align: left;
+        }
+        .purchased-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #eee;
+        }
+        .purchased-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">✓</div>
+        <h1>¡Pago Exitoso!</h1>
+        <p>Gracias por tu compra. Hemos recibido tu pago correctamente.</p>
+        
+        <div class="purchased-items">
+            <h2>Detalles de tu compra:</h2>
+            
+            {% for item in cart_items %}
+                <div class="purchased-item">
+                    <img src="{{ item.product.image }}" alt="{{ item.product.name }}">
+                    <div>
+                        <h3>{{ item.product.name }}</h3>
+                        <p>Cantidad: {{ item.quantity }}</p>
+                        <p>Precio unitario: ${{ item.product.price }}</p>
+                        <p>Subtotal: ${{ item.total_price }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <p>Un correo de confirmación ha sido enviado a tu dirección de email.</p>
+        <a href="/">Volver a la tienda</a>
+    </div>
+</body>
+</html>
