@@ -1,0 +1,83 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{%static 'css/dashboard.css'%}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <title>Dashboard Ferremas</title>
+</head>
+<body>
+    <div class="d-flex flex-column flex-shrink-0 p-3 bg-light sidebar" style="width: 280px;">
+        <a href="{% url 'dashboard-panel-page' %}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
+            <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
+            <span class="fs-4">Ferremas Dashboard</span>
+        </a>
+        <hr>
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a href="{% url 'dashboard-panel-page' %}" 
+                class="nav-link link-dark {% if request.resolver_match.url_name == 'dashboard-panel-page' %}active{% endif %}">
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="" 
+                class="nav-link link-dark {% if request.resolver_match.url_name == 'admin_orders' %}active{% endif %}">
+                    Pedidos
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'list-products' %}" 
+                class="nav-link link-dark {% if request.resolver_match.url_name == 'list-products' %}active{% endif %}">
+                    Productos
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="" 
+                class="nav-link link-dark {% if request.resolver_match.url_name == 'admin_users' %}active{% endif %}">
+                    Usuarios
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'index-page' %}" 
+                class="nav-link link-dark {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                    Ver sitio web
+                </a>
+            </li>
+        </ul>
+
+        <hr>
+        <div class="dropdown">
+            <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle show" 
+            id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="true">
+                {% if user.profile.image %}
+                    <img src="{{ user.profile.image.url }}" alt="Foto de perfil" width="32" height="32" class="rounded-circle me-2">
+                {% else %}
+                    <img src="" alt="Foto de perfil" width="32" height="32" class="rounded-circle me-2">
+                {% endif %}
+                <strong>{{ user.username }}</strong>
+            </a>
+            <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser2">
+                <li><a class="dropdown-item" href="{% url 'admin-settings-page' %}">Opciones</a></li>
+                <li><a class="dropdown-item" href="{% url 'admin-profile-page' %}">Perfil</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form method="post" action="{% url 'logout-fun' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item">Cerrar Sesión</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        {%block content%}
+        {%endblock%}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+</body>
+</html>
