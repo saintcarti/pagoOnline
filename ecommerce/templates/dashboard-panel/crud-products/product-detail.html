@@ -1,9 +1,36 @@
 {% extends 'dashboard-panel/dashboard.html' %}
 {% load static %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/product-detail.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="main-content">
-  <div class="container-fluid px-4 py-4">
+<style>
+  .main-content {
+    margin-left: 280px; /* Igual al ancho del sidebar */
+    padding: 20px;
+  }
+
+  .sidebar {
+    position: fixed;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+    }
+
+    .sidebar {
+      width: 100%;
+      position: relative;
+    }
+  }
+</style>
+<div class="container-fluid px-4 py-4">
     
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
@@ -229,58 +256,6 @@
 
   </div>
 </div>
-
-<style>
-  .main-content {
-    margin-left: 280px;
-    padding: 20px;
-  }
-  
-  .sidebar {
-    position: fixed;
-    height: 100%;
-    top: 0;
-    left: 0;
-  }
-  
-  @media (max-width: 768px) {
-    .main-content {
-      margin-left: 0;
-    }
-    
-    .sidebar {
-      width: 100%;
-      position: relative;
-    }
-  }
-  
-  .breadcrumb {
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 10px;
-    padding: 10px 15px;
-  }
-  
-  .card {
-    border: none;
-    transition: transform 0.3s ease;
-  }
-  
-  .card:hover {
-    transform: translateY(-2px);
-  }
-  
-  .badge {
-    font-size: 0.8em;
-  }
-  
-  .btn-group .btn {
-    transition: all 0.3s ease;
-  }
-  
-  .btn-group .btn:hover {
-    transform: translateY(-2px);
-  }
-</style>
 
 <script>
 function copyToClipboard(text) {

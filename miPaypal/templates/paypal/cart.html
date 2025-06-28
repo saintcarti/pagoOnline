@@ -1,95 +1,231 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carrito de Compras</title>
+    <link rel="stylesheet" href="{% static 'css/cart.css' %}">
+    <!-- CSS de diagnóstico temporal -->
     <style>
+        body {
+            background-color: #F8F9FA !important; /* Color hueso como login/register */
+            font-family: "Helvetica Neue", sans-serif !important;
+            color: #333333 !important;
+            margin: 0 !important;
+            padding: 20px !important;
+            min-height: 100vh !important;
+        }
         .cart-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            max-width: 900px !important;
+            margin: 0 auto !important;
+            background-color: #F2E8D5 !important; /* Color crema como los formularios */
+            border-radius: 12px !important;
+            padding: 2rem !important;
+            box-shadow: 0 4px 8px rgba(216, 195, 165, 0.3) !important; /* Sombra con color del borde */
+            border: solid 1px #D8C3A5 !important; /* Borde marrón claro */
+        }
+        h1 {
+            text-align: center !important;
+            color: #333333 !important; /* Texto oscuro consistente */
+            font-size: 2.5rem !important;
+            margin-bottom: 2rem !important;
         }
         .cart-item {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 20px;
+            background-color: #FFFFFF !important; /* Fondo blanco para contraste */
+            border-radius: 12px !important;
+            padding: 1.5rem !important;
+            margin-bottom: 1rem !important;
+            display: flex !important;
+            align-items: center !important;
+            border: 2px solid #D8C3A5 !important; /* Borde consistente */
+            box-shadow: 0 2px 4px rgba(216, 195, 165, 0.2) !important;
         }
         .cart-item img {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            margin-right: 20px;
+            width: 120px !important;
+            height: 120px !important;
+            object-fit: cover !important;
+            border-radius: 12px !important;
+            margin-right: 1.5rem !important;
+            border: 1px solid #D8C3A5 !important;
         }
         .item-details {
-            flex-grow: 1;
+            flex-grow: 1 !important;
+        }
+        .item-details h3 {
+            color: #333333 !important;
+            margin-bottom: 0.5rem !important;
+            font-weight: 600 !important;
+        }
+        .item-details p {
+            color: #666666 !important;
+            margin-bottom: 0.5rem !important;
         }
         .quantity-control {
-            display: flex;
-            align-items: center;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+            margin: 1rem 0 !important;
+        }
+        .quantity-control button {
+            background-color: #D8C3A5 !important; /* Color del borde como botón */
+            color: #333333 !important;
+            border: none !important;
+            width: 35px !important;
+            height: 35px !important;
+            border-radius: 50% !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+        }
+        .quantity-control button:hover {
+            background-color: #C4B085 !important; /* Versión más oscura al hover */
         }
         .quantity-control input {
-            width: 50px;
-            text-align: center;
-            margin: 0 10px;
+            width: 60px !important;
+            text-align: center !important;
+            border: 2px solid #D8C3A5 !important;
+            border-radius: 8px !important;
+            padding: 0.5rem !important;
+            background-color: #FFFFFF !important;
+            color: #333333 !important;
+        }
+        .update-btn {
+            background-color: #D8C3A5 !important;
+            color: #333333 !important;
+            border: none !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+        }
+        .update-btn:hover {
+            background-color: #C4B085 !important;
         }
         .total-section {
-            text-align: right;
-            margin-top: 20px;
-            font-size: 1.2em;
-            font-weight: bold;
+            background-color: #E6D7C1 !important; /* Versión más clara del color crema */
+            color: #333333 !important;
+            padding: 2rem !important;
+            border-radius: 12px !important;
+            text-align: center !important;
+            margin: 2rem 0 !important;
+            border: 2px solid #D8C3A5 !important;
+        }
+        .total-amount {
+            font-size: 2rem !important;
+            font-weight: bold !important;
+            margin: 0 !important;
+            color: #333333 !important;
         }
         .checkout-btn {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
+            display: block !important;
+            width: 100% !important;
+            padding: 1rem 2rem !important;
+            background-color: #D8C3A5 !important;
+            color: white !important;
+            text-decoration: none !important;
+            border-radius: 12px !important;
+            text-align: center !important;
+            font-size: 1.2rem !important;
+            font-weight: bold !important;
+            transition: all 0.3s ease !important;
+            border: 2px solid #C4B085 !important;
+        }
+        .checkout-btn:hover {
+            text-decoration: none !important;
+            color: #333333 !important;
+            background-color: #C4B085 !important;
+            transform: translateY(-2px) !important;
+        }
+        .empty-cart {
+            text-align: center !important;
+            padding: 3rem !important;
+        }
+        .continue-shopping {
+            display: inline-block !important;
+            padding: 1rem 2rem !important;
+            background-color: #D8C3A5 !important;
+            color: #333333 !important;
+            text-decoration: none !important;
+            border-radius: 12px !important;
+            margin-top: 1rem !important;
+            transition: all 0.3s ease !important;
+        }
+        .continue-shopping:hover {
+            background-color: #C4B085 !important;
+            text-decoration: none !important;
+            color: #333333 !important;
+        }
+        .remove-link {
+            color: #B85450 !important; /* Rojo más suave que combine con la paleta */
+            text-decoration: none !important;
+            font-weight: bold !important;
+            padding: 0.5rem !important;
+            border-radius: 8px !important;
+            transition: all 0.3s ease !important;
+        }
+        .remove-link:hover {
+            color: #FFFFFF !important;
+            background-color: #B85450 !important;
+            text-decoration: none !important;
         }
     </style>
 </head>
 <body>
     <div class="cart-container">
-        <h1>Tu Carrito de Compras</h1>
+        <h1><i class="fas fa-shopping-cart me-2"></i>Tu Carrito de Compras</h1>
         
         {% if cart_items %}
-            {% for item in cart_items %}
-                <div class="cart-item">
-                    <img src="{{ item.product.image }}" alt="{{ item.product.name }}">
-                    <div class="item-details">
-                        <h3>{{ item.product.name }}</h3>
-                        <p>{{ item.product.description|truncatewords:20 }}</p>
-                        <p>Precio unitario: ${{ item.product.price }}</p>
-                        
-                        <form method="post" action="{% url 'update_cart_item' item.id %}">
-                            {% csrf_token %}
-                            <div class="quantity-control">
-                                <button type="button" onclick="this.parentNode.querySelector('input[type=number]').stepDown()">-</button>
-                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1">
-                                <button type="button" onclick="this.parentNode.querySelector('input[type=number]').stepUp()">+</button>
-                                <button type="submit">Actualizar</button>
-                            </div>
-                        </form>
-                        
-                        <p>Total: ${{ item.total_price }}</p>
-                        <a href="{% url 'remove_from_cart' item.id %}">Eliminar</a>
+            <div class="cart-items-container">
+                {% for item in cart_items %}
+                    <div class="cart-item">
+                        <img src="{{ item.product.image }}" alt="{{ item.product.name }}">
+                        <div class="item-details">
+                            <h3>{{ item.product.name }}</h3>
+                            <p>{{ item.product.description|truncatewords:20 }}</p>
+                            <p class="item-price">Precio unitario: ${{ item.product.price }}</p>
+                            
+                            <form method="post" action="{% url 'update_cart_item' item.id %}">
+                                {% csrf_token %}
+                                <div class="quantity-control">
+                                    <button type="button" onclick="this.parentNode.querySelector('input[type=number]').stepDown()">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1">
+                                    <button type="button" onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <button type="submit" class="update-btn">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <p class="item-total">Total: ${{ item.total_price }}</p>
+                            <a href="{% url 'remove_from_cart' item.id %}" class="remove-link">
+                                <i class="fas fa-trash-alt"></i>Eliminar
+                            </a>
+                        </div>
                     </div>
-                </div>
-            {% endfor %}
-            
-            <div class="total-section">
-                <p>Total del Carrito: ${{ total }}</p>
+                {% endfor %}
             </div>
             
-            <a href="{% url 'checkout' %}" class="checkout-btn">Proceder al Pago</a>
+            <div class="total-section">
+                <p class="total-label">Total del Carrito:</p>
+                <p class="total-amount">${{ total }}</p>
+            </div>
+            
+            <a href="{% url 'checkout' %}" class="checkout-btn">
+                <i class="fas fa-credit-card me-2"></i>Proceder al Pago
+            </a>
         {% else %}
-            <p>Tu carrito está vacío.</p>
-            <a href="/">Seguir comprando</a>
+            <div class="empty-cart">
+                <i class="fas fa-shopping-cart"></i>
+                <h2>Tu carrito está vacío</h2>
+                <p>¡Explora nuestros productos y encuentra algo increíble!</p>
+                <a href="/" class="continue-shopping">
+                    <i class="fas fa-arrow-left me-2"></i>Seguir Comprando
+                </a>
+            </div>
         {% endif %}
     </div>
 </body>

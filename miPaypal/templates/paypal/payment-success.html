@@ -1,63 +1,251 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pago Exitoso</title>
+    <link rel="stylesheet" href="{% static 'css/payment-success.css' %}">
+    <!-- CSS de diagnóstico temporal -->
     <style>
+        body {
+            background-color: #F8F9FA !important; /* Color hueso como login/register */
+            font-family: "Helvetica Neue", sans-serif !important;
+            color: #333333 !important;
+            margin: 0 !important;
+            padding: 20px !important;
+            min-height: 100vh !important;
+        }
         .success-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            text-align: center;
+            max-width: 900px !important;
+            margin: 0 auto !important;
+            text-align: center !important;
         }
         .success-icon {
-            font-size: 5em;
-            color: #28a745;
-            margin: 20px 0;
+            width: 120px !important;
+            height: 120px !important;
+            background-color: #F2E8D5 !important; /* Color crema */
+            border: 3px solid #D8C3A5 !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin: 0 auto 2rem !important;
+            box-shadow: 0 4px 8px rgba(216, 195, 165, 0.3) !important;
         }
-        .purchased-items {
-            margin: 30px 0;
-            text-align: left;
+        .success-icon i {
+            font-size: 3.5rem !important;
+            color: #4A7C59 !important; /* Verde que combine con la paleta */
+        }
+        h1 {
+            color: #333333 !important;
+            font-size: 3rem !important;
+            margin-bottom: 1rem !important;
+        }
+        .success-subtitle {
+            color: #666666 !important;
+            font-size: 1.3rem !important;
+            margin-bottom: 3rem !important;
+        }
+        .purchase-details, .additional-info {
+            background-color: #F2E8D5 !important; /* Color crema como los formularios */
+            border-radius: 12px !important;
+            padding: 2rem !important;
+            margin-bottom: 2rem !important;
+            box-shadow: 0 4px 8px rgba(216, 195, 165, 0.3) !important;
+            border: solid 1px #D8C3A5 !important;
+        }
+        .purchase-details h2, .additional-info h3 {
+            color: #333333 !important;
+            margin-bottom: 1.5rem !important;
         }
         .purchased-item {
-            display: flex;
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #eee;
+            background-color: #FFFFFF !important;
+            border-radius: 12px !important;
+            padding: 1.5rem !important;
+            margin-bottom: 1rem !important;
+            display: flex !important;
+            align-items: center !important;
+            border: 2px solid #D8C3A5 !important;
+            box-shadow: 0 2px 4px rgba(216, 195, 165, 0.2) !important;
         }
         .purchased-item img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            margin-right: 15px;
+            width: 100px !important;
+            height: 100px !important;
+            object-fit: cover !important;
+            border-radius: 12px !important;
+            margin-right: 1.5rem !important;
+            border: 1px solid #D8C3A5 !important;
+        }
+        .item-info h3 {
+            color: #333333 !important;
+            font-weight: 600 !important;
+        }
+        .item-detail {
+            color: #666666 !important;
+        }
+        .quantity-info {
+            background-color: #D8C3A5 !important;
+            color: #333333 !important;
+            padding: 0.2rem 0.8rem !important;
+            border-radius: 20px !important;
+            font-size: 0.8rem !important;
+            font-weight: 600 !important;
+        }
+        .price-info {
+            color: #333333 !important;
+            font-weight: 600 !important;
+        }
+        .btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+            padding: 1rem 2rem !important;
+            border-radius: 12px !important;
+            text-decoration: none !important;
+            font-weight: 600 !important;
+            margin: 0.5rem !important;
+            transition: all 0.3s ease !important;
+        }
+        .btn-primary {
+            background-color: #D8C3A5 !important;
+            color: #333333 !important;
+            border: 2px solid #C4B085 !important;
+        }
+        .btn-primary:hover {
+            background-color: #C4B085 !important;
+            text-decoration: none !important;
+            color: #333333 !important;
+        }
+        .btn-outline {
+            background-color: #FFFFFF !important;
+            color: #333333 !important;
+            border: 2px solid #D8C3A5 !important;
+        }
+        .btn-outline:hover {
+            background-color: #D8C3A5 !important;
+            color: #333333 !important;
+            text-decoration: none !important;
+        }
+        .success-footer {
+            background-color: rgba(242, 232, 213, 0.9) !important; /* Versión transparente del color crema */
+            border-radius: 12px !important;
+            padding: 1.5rem !important;
+            margin-top: 2rem !important;
+            border: 1px solid #D8C3A5 !important;
+        }
+        .success-footer p {
+            color: #666666 !important;
+            margin: 0 !important;
+            font-size: 0.95rem !important;
+        }
+        .additional-info p {
+            color: #666666 !important;
+            line-height: 1.6 !important;
         }
     </style>
 </head>
 <body>
+    <!-- Animación de confetti -->
+    <div class="confetti">
+        <div class="confetti-piece"></div>
+        <div class="confetti-piece"></div>
+        <div class="confetti-piece"></div>
+        <div class="confetti-piece"></div>
+        <div class="confetti-piece"></div>
+        <div class="confetti-piece"></div>
+        <div class="confetti-piece"></div>
+        <div class="confetti-piece"></div>
+        <div class="confetti-piece"></div>
+        <div class="confetti-piece"></div>
+    </div>
+
     <div class="success-container">
-        <div class="success-icon">✓</div>
-        <h1>¡Pago Exitoso!</h1>
-        <p>Gracias por tu compra. Hemos recibido tu pago correctamente.</p>
-        
-        <div class="purchased-items">
-            <h2>Detalles de tu compra:</h2>
-            
-            {% for item in cart_items %}
-                <div class="purchased-item">
-                    <img src="{{ item.product.image }}" alt="{{ item.product.name }}">
-                    <div>
-                        <h3>{{ item.product.name }}</h3>
-                        <p>Cantidad: {{ item.quantity }}</p>
-                        <p>Precio unitario: ${{ item.product.price }}</p>
-                        <p>Subtotal: ${{ item.total_price }}</p>
-                    </div>
-                </div>
-            {% endfor %}
+        <div class="success-icon">
+            <i class="fas fa-check"></i>
         </div>
         
-        <p>Un correo de confirmación ha sido enviado a tu dirección de email.</p>
-        <a href="/">Volver a la tienda</a>
+        <h1>¡Pago Exitoso!</h1>
+        <p class="success-subtitle">
+            Gracias por tu compra. Hemos recibido tu pago correctamente y tu pedido está siendo procesado.
+        </p>
+        
+        <div class="purchase-details">
+            <h2><i class="fas fa-receipt"></i>Detalles de tu Compra</h2>
+            
+            <div class="purchased-items">
+                {% for item in cart_items %}
+                    <div class="purchased-item">
+                        <img src="{{ item.product.image }}" alt="{{ item.product.name }}">
+                        <div class="item-info">
+                            <h3>{{ item.product.name }}</h3>
+                            <div class="item-detail">
+                                <span>Cantidad:</span>
+                                <span class="quantity-info">{{ item.quantity }}</span>
+                            </div>
+                            <div class="item-detail">
+                                <span>Precio unitario:</span>
+                                <span class="price-info">${{ item.product.price }}</span>
+                            </div>
+                            <div class="item-detail">
+                                <span><strong>Subtotal:</strong></span>
+                                <span class="price-info"><strong>${{ item.total_price }}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="additional-info">
+            <h3><i class="fas fa-info-circle"></i>Información Importante</h3>
+            <p>
+                <i class="fas fa-envelope me-2"></i>
+                Un correo de confirmación ha sido enviado a tu dirección de email con todos los detalles de tu compra.
+            </p>
+            <p>
+                <i class="fas fa-truck me-2"></i>
+                Tu pedido será procesado en las próximas 24 horas y recibirás información de seguimiento por email.
+            </p>
+            <p>
+                <i class="fas fa-headset me-2"></i>
+                Si tienes alguna pregunta o necesitas ayuda, no dudes en contactar nuestro servicio al cliente.
+            </p>
+        </div>
+        
+        <div class="action-buttons">
+            <a style="color: white;" href="{%url 'index-page'%}" class="btn btn-primary">
+                <i class="fas fa-home"></i>
+                Volver a la Tienda
+            </a>
+            <a href="#" class="btn btn-outline" onclick="window.print(); return false;">
+                <i class="fas fa-print"></i>
+                Imprimir Recibo
+            </a>
+        </div>
+        
+        <div class="success-footer">
+            <p>
+                <i class="fas fa-heart me-1"></i>
+                ¡Gracias por confiar en nosotros! Esperamos verte pronto de nuevo.
+            </p>
+        </div>
     </div>
+    
+    <script>
+        // Agregar más elementos de confetti dinámicamente
+        document.addEventListener('DOMContentLoaded', function() {
+            const confettiContainer = document.querySelector('.confetti');
+            
+            for (let i = 0; i < 20; i++) {
+                const confettiPiece = document.createElement('div');
+                confettiPiece.classList.add('confetti-piece');
+                confettiPiece.style.left = Math.random() * 100 + '%';
+                confettiPiece.style.animationDelay = Math.random() * 3 + 's';
+                confettiPiece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                confettiContainer.appendChild(confettiPiece);
+            }
+        });
+    </script>
 </body>
 </html>
