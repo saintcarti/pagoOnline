@@ -47,7 +47,7 @@
       <ul class="navbar-nav mb-2 mb-lg-0 align-items-center">
         <!-- Ícono del carrito con contador -->
         <li class="nav-item me-3 position-relative">
-          <a class="nav-link" href="#">
+          <a class="nav-link" href="{%url 'view_cart'%}">
             <i class="bi bi-cart-fill fs-4 text-danger"></i>
             {% if cart_count > 0 %}
             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
