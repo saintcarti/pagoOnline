@@ -1,104 +1,148 @@
-{% extends 'dashboard.html' %}
+{% extends 'dashboard-panel/dashboard.html' %}
 {% load static %}
 
 {% block content %}
-<div style="max-width: 500px; background: #F2E8D5; 
-padding: 30px; border-radius: 15px; 
-border: solid 0.5px #D8C3A5;
-box-shadow: 0 4px 8px rgba(216, 195, 165, 0.5);
-" class="container">
-    <form method="post" action="{%url 'create-product'%}" enctype="multipart/form-data">
+<div class="main-content">
+  <div style="max-width: 800px; background: #F2E8D5; 
+              padding: 30px; border-radius: 15px; 
+              border: solid 0.5px #D8C3A5;
+              box-shadow: 0 4px 8px rgba(216, 195, 165, 0.5);
+              margin-left: 20px;">
+    <h2 style="color: #5A3E2B; margin-bottom: 25px;">Crear Nuevo Producto</h2>
+    
+    <form method="post" action="{% url 'create-product' %}" enctype="multipart/form-data">
         {% csrf_token %}
     
-        <div class="mb-3">
-            <label style="color: #5A3E2B;" for="nombre" class="form-label">Nombre del Producto</label>
-            <input type="text" class="form-control" id="nombre" name="nombre" 
-                   value="{{ form.nombre.value|default_if_none:'' }}" 
-                   placeholder="Ingresa el nombre del producto">
-            {% if form.nombre.errors %}
-                <div class="text-danger">{{ form.nombre.errors }}</div>
-            {% endif %}
+        <div class="row">
+            <!-- Columna izquierda -->
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label style="color: #5A3E2B;" for="nombre" class="form-label">Nombre del Producto</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" 
+                           value="{{ form.nombre.value|default_if_none:'' }}" 
+                           placeholder="Ingresa el nombre del producto">
+                    {% if form.nombre.errors %}
+                        <div class="text-danger">{{ form.nombre.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label style="color: #5A3E2B;" for="descripcion" class="form-label">Descripción</label>
+                    <textarea class="form-control" id="descripcion" name="descripcion" 
+                              rows="3" placeholder="Escribe una descripción...">{{ form.descripcion.value|default_if_none:'' }}</textarea>
+                    {% if form.descripcion.errors %}
+                        <div class="text-danger">{{ form.descripcion.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label style="color: #5A3E2B;" for="precio" class="form-label">Precio</label>
+                    <input type="number" class="form-control" id="precio" name="precio" 
+                           value="{{ form.precio.value|default_if_none:'' }}" step="0.01" 
+                           placeholder="Ej: 9990.00">
+                    {% if form.precio.errors %}
+                        <div class="text-danger">{{ form.precio.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Columna derecha -->
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label style="color: #5A3E2B;" for="categoria" class="form-label">Categoría</label>
+                    <select class="form-select" id="categoria" name="categoria">
+                        <option selected disabled value="">Selecciona una categoría</option>
+                        {% for value, label in form.categoria.field.choices %}
+                            <option value="{{ value }}" {% if form.categoria.value == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if form.categoria.errors %}
+                        <div class="text-danger">{{ form.categoria.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label style="color: #5A3E2B;" for="marca" class="form-label">Marca</label>
+                    <select class="form-select" id="marca" name="marca">
+                        <option selected disabled value="">Selecciona una marca</option>
+                        {% for value, label in form.marca.field.choices %}
+                            <option value="{{ value }}" {% if form.marca.value == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if form.marca.errors %}
+                        <div class="text-danger">{{ form.marca.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label style="color: #5A3E2B;" for="stock" class="form-label">Stock</label>
+                    <input type="number" class="form-control" id="stock" name="stock" 
+                           value="{{ form.stock.value|default_if_none:'' }}" 
+                           placeholder="Cantidad disponible">
+                    {% if form.stock.errors %}
+                        <div class="text-danger">{{ form.stock.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
 
-        <div class="mb-3">
-            <label style="color: #5A3E2B;" for="descripcion" class="form-label">Descripción</label>
-            <textarea class="form-control" id="descripcion" name="descripcion" 
-                      rows="3" placeholder="Escribe una descripción...">{{ form.descripcion.value|default_if_none:'' }}</textarea>
-            {% if form.descripcion.errors %}
-                <div class="text-danger">{{ form.descripcion.errors }}</div>
-            {% endif %}
-        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="mb-3">
+                    <label style="color: #5A3E2B;" for="imagen" class="form-label">Imagen del Producto</label>
+                    <input class="form-control" type="file" id="imagen" name="imagen">
+                    {% if form.imagen.errors %}
+                        <div class="text-danger">{{ form.imagen.errors }}</div>
+                    {% endif %}
+                </div>
 
-        <div class="mb-3">
-            <label style="color: #5A3E2B;" for="precio" class="form-label">Precio</label>
-            <input type="number" class="form-control" id="precio" name="precio" 
-                   value="{{ form.precio.value|default_if_none:'' }}" step="0.01" 
-                   placeholder="Ej: 9990.00">
-            {% if form.precio.errors %}
-                <div class="text-danger">{{ form.precio.errors }}</div>
-            {% endif %}
-        </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="activo" name="activo" 
+                           {% if form.activo.value %}checked{% endif %}>
+                    <label style="color: #5A3E2B;" class="form-check-label" for="activo">
+                        Producto activo
+                    </label>
+                    {% if form.activo.errors %}
+                        <div class="text-danger">{{ form.activo.errors }}</div>
+                    {% endif %}
+                </div>
 
-        <div class="mb-3">
-            <label style="color: #5A3E2B;" for="categoria" class="form-label">Categoría</label>
-            <select class="form-select" id="categoria" name="categoria">
-                <option selected disabled value="">Selecciona una categoría</option>
-                {% for value, label in form.categoria.field.choices %}
-                    <option value="{{ value }}" {% if form.categoria.value == value %}selected{% endif %}>
-                        {{ label }}
-                    </option>
-                {% endfor %}
-            </select>
-            {% if form.categoria.errors %}
-                <div class="text-danger">{{ form.categoria.errors }}</div>
-            {% endif %}
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary me-md-2">Crear Producto</button>
+                    <a href="{% url 'list-products' %}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </div>
         </div>
-
-        <div class="mb-3">
-            <label style="color: #5A3E2B;" for="marca" class="form-label">Marca</label>
-            <select class="form-select" id="marca" name="marca">
-                <option selected disabled value="">Selecciona una marca</option>
-                {% for value, label in form.marca.field.choices %}
-                    <option value="{{ value }}" {% if form.marca.value == value %}selected{% endif %}>
-                        {{ label }}
-                    </option>
-                {% endfor %}
-            </select>
-            {% if form.marca.errors %}
-                <div class="text-danger">{{ form.marca.errors }}</div>
-            {% endif %}
-        </div>
-
-        <div class="mb-3">
-            <label style="color: #5A3E2B;" for="stock" class="form-label">Stock</label>
-            <input type="number" class="form-control" id="stock" name="stock" 
-                   value="{{ form.stock.value|default_if_none:'' }}" 
-                   placeholder="Cantidad disponible">
-            {% if form.stock.errors %}
-                <div class="text-danger">{{ form.stock.errors }}</div>
-            {% endif %}
-        </div>
-
-        <div class="mb-3">
-            <label style="color: #5A3E2B;" for="imagen" class="form-label">Imagen del Producto</label>
-            <input class="form-control" type="file" id="imagen" name="imagen">
-            {% if form.imagen.errors %}
-                <div class="text-danger">{{ form.imagen.errors }}</div>
-            {% endif %}
-        </div>
-
-        <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="activo" name="activo" 
-                   {% if form.activo.value %}checked{% endif %}>
-            <label style="color: #5A3E2B;" class="form-check-label" for="activo">
-                Producto activo
-            </label>
-            {% if form.activo.errors %}
-                <div class="text-danger">{{ form.activo.errors }}</div>
-            {% endif %}
-        </div>
-
-        <button type="submit" class="btn btn-primary">Crear Producto</button>
     </form>
+  </div>
 </div>
+
+<style>
+  .main-content {
+    margin-left: 280px; /* Igual al ancho del sidebar */
+    padding: 20px;
+  }
+  
+  .sidebar {
+    position: fixed;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+  
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+    }
+    
+    .sidebar {
+      width: 100%;
+      position: relative;
+    }
+  }
+</style>
 {% endblock %}
