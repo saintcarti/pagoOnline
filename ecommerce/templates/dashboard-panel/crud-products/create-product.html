@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'dashboard.html' %}
 {% load static %}
 
 {% block content %}
@@ -7,7 +7,7 @@ padding: 30px; border-radius: 15px;
 border: solid 0.5px #D8C3A5;
 box-shadow: 0 4px 8px rgba(216, 195, 165, 0.5);
 " class="container">
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" action="{%url 'create-product'%}" enctype="multipart/form-data">
         {% csrf_token %}
     
         <div class="mb-3">

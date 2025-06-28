@@ -63,6 +63,15 @@ def about(request):
 def contact(request):
     return render(request,'ecommerce/contact.html')
 
+def logout(request):
+    pass
+
+def admin_settings(request):
+    return render(request,'dashboard-panel/profile/admin-settings.html')
+
+def admin_profile(request):
+    return render(request,'dashboard-panel/profile/admin-profile.html')
+
 
 def dashboard(request):
     return render(request,'dashboard-panel/dashboard.html')
@@ -73,6 +82,7 @@ def list_products(request):
     return render(request, 'dashboard-panel/crud-products/list-product.html', {
         "products": products
     })
+
 
 @login_required
 def crear_pview(request):
