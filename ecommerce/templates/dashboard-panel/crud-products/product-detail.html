@@ -1,0 +1,312 @@
+{% extends 'dashboard-panel/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="main-content">
+  <div class="container-fluid px-4 py-4">
+    
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="{% url 'dashboard-panel-page' %}" class="text-decoration-none">
+            <i class="fas fa-home me-1"></i>Dashboard
+          </a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'list-products' %}" class="text-decoration-none">
+            <i class="fas fa-boxes me-1"></i>Productos
+          </a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+          <i class="fas fa-eye me-1"></i>{{ product.name }}
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Header con acciones -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h3 mb-0">
+        <i class="fas fa-box me-2 text-primary"></i>Detalle del Producto
+      </h1>
+      <div class="btn-group" role="group">
+        <a href="{% url 'update-product' product.pk %}" class="btn btn-primary">
+          <i class="fas fa-edit me-1"></i> Editar
+        </a>
+        <a href="{% url 'delete-product' product.pk %}" class="btn btn-outline-danger">
+          <i class="fas fa-trash-alt me-1"></i> Eliminar
+        </a>
+        <a href="{% url 'list-products' %}" class="btn btn-secondary">
+          <i class="fas fa-arrow-left me-1"></i> Volver
+        </a>
+      </div>
+    </div>
+
+    <!-- Información del producto -->
+    <div class="row">
+      <!-- Imagen del producto -->
+      <div class="col-lg-5 mb-4">
+        <div class="card shadow h-100">
+          <div class="card-body text-center p-4">
+            {% if product.image %}
+              <img src="{{ product.image }}" alt="{{ product.name }}" 
+                   class="img-fluid rounded shadow-sm" 
+                   style="max-height: 400px; object-fit: cover; width: 100%;">
+            {% else %}
+              <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                   style="height: 400px;">
+                <div class="text-center">
+                  <i class="fas fa-image text-muted mb-3" style="font-size: 4rem;"></i>
+                  <p class="text-muted">Sin imagen disponible</p>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Información básica -->
+      <div class="col-lg-7 mb-4">
+        <div class="card shadow h-100">
+          <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-info-circle me-2"></i>Información General
+            </h5>
+          </div>
+          <div class="card-body p-4">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-muted fw-bold">Nombre del Producto</label>
+                <p class="fs-5 fw-bold text-dark">{{ product.name }}</p>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-muted fw-bold">Precio</label>
+                <p class="fs-4 fw-bold text-success">
+                  <i class="fas fa-dollar-sign me-1"></i>${{ product.price|floatformat:0 }}
+                </p>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-muted fw-bold">Marca</label>
+                <p class="mb-0">
+                  {% if product.brand %}
+                    <span class="badge bg-info fs-6 p-2">
+                      <i class="fas fa-trademark me-1"></i>{{ product.brand.name }}
+                    </span>
+                  {% else %}
+                    <span class="text-muted">Sin marca asignada</span>
+                  {% endif %}
+                </p>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-muted fw-bold">Categorías</label>
+                <div>
+                  {% for category in product.categories.all %}
+                    <span class="badge bg-secondary me-1 mb-1 p-2">
+                      <i class="fas fa-tag me-1"></i>{{ category.name }}
+                    </span>
+                  {% empty %}
+                    <span class="text-muted">Sin categorías asignadas</span>
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="col-12 mb-3">
+                <label class="form-label text-muted fw-bold">Descripción</label>
+                <div class="p-3 bg-light rounded">
+                  <p class="mb-0">{{ product.description|linebreaks }}</p>
+                </div>
+              </div>
+              {% if product.image %}
+              <div class="col-12">
+                <label class="form-label text-muted fw-bold">URL de la Imagen</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" value="{{ product.image }}" readonly>
+                  <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('{{ product.image }}')">
+                    <i class="fas fa-copy me-1"></i>Copiar
+                  </button>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estadísticas del producto -->
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <div class="card bg-primary text-white shadow">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h6 class="card-title">ID del Producto</h6>
+                <h3 class="mb-0">#{{ product.pk }}</h3>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-hashtag fa-2x opacity-75"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card bg-success text-white shadow">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h6 class="card-title">Estado</h6>
+                <h5 class="mb-0">
+                  <i class="fas fa-check-circle me-1"></i>Activo
+                </h5>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-toggle-on fa-2x opacity-75"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card bg-info text-white shadow">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h6 class="card-title">Categorías</h6>
+                <h3 class="mb-0">{{ product.categories.count }}</h3>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-tags fa-2x opacity-75"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Productos relacionados -->
+    {% if related_products %}
+    <div class="card shadow">
+      <div class="card-header bg-secondary text-white">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-link me-2"></i>Productos Relacionados
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          {% for related in related_products %}
+          <div class="col-md-3 mb-3">
+            <div class="card h-100 shadow-sm">
+              <div class="card-img-top-container" style="height: 150px; overflow: hidden;">
+                {% if related.image %}
+                  <img src="{{ related.image }}" alt="{{ related.name }}" 
+                       class="card-img-top" 
+                       style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                  <div class="bg-light d-flex align-items-center justify-content-center h-100">
+                    <i class="fas fa-image text-muted fa-2x"></i>
+                  </div>
+                {% endif %}
+              </div>
+              <div class="card-body p-3">
+                <h6 class="card-title text-truncate">{{ related.name }}</h6>
+                <p class="card-text">
+                  <span class="text-success fw-bold">${{ related.price|floatformat:0 }}</span>
+                  {% if related.brand %}
+                    <br><small class="text-muted">{{ related.brand.name }}</small>
+                  {% endif %}
+                </p>
+                <a href="{% url 'product-detail' related.pk %}" class="btn btn-sm btn-outline-primary">
+                  <i class="fas fa-eye me-1"></i>Ver detalles
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<style>
+  .main-content {
+    margin-left: 280px;
+    padding: 20px;
+  }
+  
+  .sidebar {
+    position: fixed;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+  
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+    }
+    
+    .sidebar {
+      width: 100%;
+      position: relative;
+    }
+  }
+  
+  .breadcrumb {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    padding: 10px 15px;
+  }
+  
+  .card {
+    border: none;
+    transition: transform 0.3s ease;
+  }
+  
+  .card:hover {
+    transform: translateY(-2px);
+  }
+  
+  .badge {
+    font-size: 0.8em;
+  }
+  
+  .btn-group .btn {
+    transition: all 0.3s ease;
+  }
+  
+  .btn-group .btn:hover {
+    transform: translateY(-2px);
+  }
+</style>
+
+<script>
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    // Crear notificación temporal
+    const toast = document.createElement('div');
+    toast.className = 'position-fixed top-0 end-0 p-3';
+    toast.style.zIndex = '9999';
+    toast.innerHTML = `
+      <div class="toast show" role="alert">
+        <div class="toast-header">
+          <i class="fas fa-check-circle text-success me-2"></i>
+          <strong class="me-auto">Copiado</strong>
+        </div>
+        <div class="toast-body">
+          URL copiada al portapapeles
+        </div>
+      </div>
+    `;
+    document.body.appendChild(toast);
+    
+    // Remover después de 3 segundos
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
+  });
+}
+</script>
+{% endblock %}

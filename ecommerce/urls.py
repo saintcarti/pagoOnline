@@ -22,6 +22,8 @@ urlpatterns = [
     path('list-products/', list_products, name='list-products'),
     path('create-product/', crear_pview, name='create-product'),
     path('update-product/<int:pk>/', update_product, name='update-product'),
+    path('delete-product/<int:pk>/', delete_product, name='delete-product'),
+    path('product-detail/<int:pk>/', product_detail, name='product-detail'),
     
     # CRUD Users
     path('dashboard/users/', list_user, name='list-user'),

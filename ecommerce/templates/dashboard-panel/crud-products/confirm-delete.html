@@ -1,0 +1,167 @@
+{% extends 'dashboard-panel/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="main-content">
+  <div style="max-width: 600px; background: #F2E8D5; 
+              padding: 30px; border-radius: 15px; 
+              border: solid 0.5px #D8C3A5;
+              box-shadow: 0 4px 8px rgba(216, 195, 165, 0.5);
+              margin: 0 auto;">
+    
+    <div class="text-center mb-4">
+      <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+      <h2 style="color: #5A3E2B; margin-top: 15px;">Confirmar Eliminación</h2>
+    </div>
+    
+    <div class="alert alert-warning border-0 shadow-sm" role="alert">
+      <div class="d-flex">
+        <div class="flex-shrink-0">
+          <i class="fas fa-info-circle text-warning"></i>
+        </div>
+        <div class="flex-grow-1 ms-3">
+          <strong>Atención:</strong> Esta acción no se puede deshacer.
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="card-title text-dark">
+          <i class="fas fa-box me-2"></i>Producto a eliminar:
+        </h5>
+        <hr>
+        
+        <div class="row">
+          <div class="col-md-4 text-center">
+            {% if product.image %}
+              <img src="{{ product.image }}" alt="{{ product.name }}" 
+                   class="img-fluid rounded shadow-sm" 
+                   style="max-height: 150px; object-fit: cover;">
+            {% else %}
+              <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                   style="height: 150px;">
+                <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
+              </div>
+            {% endif %}
+          </div>
+          
+          <div class="col-md-8">
+            <table class="table table-borderless">
+              <tr>
+                <td><strong>Nombre:</strong></td>
+                <td>{{ product.name }}</td>
+              </tr>
+              <tr>
+                <td><strong>Precio:</strong></td>
+                <td>${{ product.price|floatformat:0 }}</td>
+              </tr>
+              <tr>
+                <td><strong>Marca:</strong></td>
+                <td>{{ product.brand.name|default:"Sin marca" }}</td>
+              </tr>
+              <tr>
+                <td><strong>Categorías:</strong></td>
+                <td>
+                  {% for category in product.categories.all %}
+                    <span class="badge bg-secondary me-1">{{ category.name }}</span>
+                  {% empty %}
+                    <span class="text-muted">Sin categorías</span>
+                  {% endfor %}
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Descripción:</strong></td>
+                <td>
+                  {% if product.description|length > 100 %}
+                    {{ product.description|truncatechars:100 }}
+                  {% else %}
+                    {{ product.description }}
+                  {% endif %}
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center">
+      <p class="text-muted mb-4">
+        ¿Estás seguro de que deseas eliminar este producto? Esta acción eliminará permanentemente toda la información del producto.
+      </p>
+      
+      <form method="POST" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger me-3">
+          <i class="fas fa-trash-alt me-1"></i> Sí, Eliminar Producto
+        </button>
+      </form>
+      
+      <a href="{% url 'list-products' %}" class="btn btn-secondary">
+        <i class="fas fa-times me-1"></i> Cancelar
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+  .main-content {
+    margin-left: 280px; /* Igual al ancho del sidebar */
+    padding: 20px;
+  }
+  
+  .sidebar {
+    position: fixed;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+  
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+    }
+    
+    .sidebar {
+      width: 100%;
+      position: relative;
+    }
+  }
+  
+  .card {
+    background: rgba(255, 255, 255, 0.9);
+  }
+  
+  .table td {
+    padding: 0.5rem 0.75rem;
+    vertical-align: middle;
+  }
+  
+  .btn-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    border: none;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+  }
+  
+  .btn-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    border: none;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+  }
+</style>
+{% endblock %}

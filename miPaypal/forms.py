@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import Product,CustomUser
+from .models import Product,CustomUser,Category,Brand
 from django.contrib.auth.forms import UserCreationForm
 
 class ProductForm(forms.ModelForm):
@@ -32,23 +32,47 @@ class ProductForm(forms.ModelForm):
         required=True,
         max_value=9999999,
         min_value=1,
-        widget=forms.IntegerField(),
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Precio en pesos chilenos',
+            'id': 'price'
+        }),
         label="Precio producto:"
     )
 
     image = forms.URLField(
-    required=True,
-    widget=forms.URLInput(attrs={
-        'class': 'form-control',
-        'placeholder': 'https://ejemplo.com/imagen.jpg',
-        'id': 'image'
-    }),
-    label="Imagen producto:"
+        required=True,
+        widget=forms.URLInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'https://ejemplo.com/imagen.jpg',
+            'id': 'image'
+        }),
+        label="Imagen producto:"
+    )
+    
+    brand = forms.ModelChoiceField(
+        queryset=Brand.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'id': 'brand'
+        }),
+        label="Marca:"
+    )
+    
+    categories = forms.ModelMultipleChoiceField(
+        queryset=Category.objects.all(),
+        required=False,
+        widget=forms.SelectMultiple(attrs={
+            'class': 'form-control',
+            'id': 'categories'
+        }),
+        label="Categorías:"
     )
 
     class Meta:
         model = Product
-        fields = ('name','description','price','image')
+        fields = ('name', 'description', 'price', 'image', 'brand', 'categories')
         
 
 
