@@ -7,7 +7,7 @@ urlpatterns = [
     path('',index,name='index-page'),
     path('products/',products,name='products-page'),
     path('about/',about,name='about-page'),
-    path('contact/',contact,name='contact-page'),
+    path('contact/',contact_view,name='contact-page'),
     ##Auth urls
     path('login/',login,name='login-page'),
     path('register/',register,name='register-page'),

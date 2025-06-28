@@ -61,8 +61,65 @@ def products(request):
 def about(request):
     return render(request,'ecommerce/about.html')
 
-def contact(request):
-    return render(request,'ecommerce/contact.html')
+def contact_view(request):
+    # Datos iniciales
+    context = {
+        'form_data': {
+            'name': '',
+            'email': '',
+            'phone': '',
+            'reason': '',
+            'message': ''
+        },
+        'form_errors': {},
+        'form_submitted': False
+    }
+
+    if request.method == 'POST':
+        # Recoger datos del formulario
+        form_data = {
+            'name': request.POST.get('name', '').strip(),
+            'email': request.POST.get('email', '').strip(),
+            'phone': request.POST.get('phone', '').strip(),
+            'reason': request.POST.get('reason', '').strip(),
+            'message': request.POST.get('message', '').strip()
+        }
+        
+        # Validación
+        errors = {}
+        
+        if not form_data['name']:
+            errors['name'] = 'Este campo es obligatorio.'
+            
+        if not form_data['email'] or '@' not in form_data['email']:
+            errors['email'] = 'Ingrese un correo electrónico válido.'
+            
+        if not form_data['phone'].isdigit() or len(form_data['phone']) not in [9, 10]:
+            errors['phone'] = 'El teléfono debe tener 9 o 10 dígitos.'
+            
+        if not form_data['reason']:
+            errors['reason'] = 'Seleccione un motivo de contacto.'
+            
+        if not form_data['message']:
+            errors['message'] = 'Por favor escriba su mensaje.'
+        
+        if errors:
+            # Si hay errores, mostramos el formulario nuevamente
+            context.update({
+                'form_data': form_data,
+                'form_errors': errors
+            })
+        else:
+            # Aquí iría la lógica para procesar el formulario (enviar email, guardar en BD, etc.)
+            
+            # Redirigir para evitar reenvío del formulario al refrescar
+            messages.success(request, '¡Gracias por tu mensaje! Nos pondremos en contacto contigo pronto.')
+            return redirect('contact_success')
+    
+    return render(request, 'contact.html', context)
+
+def contact_success(request):
+    return render(request, 'contact.html', {'form_submitted': True})
 
 @admin_required
 def admin_settings(request):
@@ -90,7 +147,7 @@ def crear_pview(request):
         name = request.POST.get('name')
         price = request.POST.get('price')
         description = request.POST.get('description')
-        image = request.FILES.get('image')
+        image = request.POST.get('image')
 
         product = Product(name=name, price=price, description=description, image=image)
         product.save()

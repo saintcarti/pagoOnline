@@ -19,11 +19,25 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return f"{self.username} ({self.get_rol_display()})"
 
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Brand(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
 class Product(models.Model):
     name = models.CharField(max_length=250)
     description = models.TextField()
     price = models.IntegerField()
     image = models.URLField(blank=True, null=True)
+    brand = models.ForeignKey('Brand', on_delete=models.CASCADE, related_name='products', null=True, blank=True)
+    categories = models.ManyToManyField('Category', related_name='products', blank=True)
 
     def __str__(self) -> str:
         return self.name
