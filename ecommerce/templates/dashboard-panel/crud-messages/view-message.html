@@ -1,0 +1,230 @@
+{% extends 'dashboard-panel/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <style>
+  .main-content {
+    margin-left: 280px; /* Igual al ancho del sidebar */
+    padding: 20px;
+  }
+
+  .sidebar {
+    position: fixed;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+    }
+
+    .sidebar {
+      width: 100%;
+      position: relative;
+    }
+  }
+</style>
+        <!-- Información del mensaje -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="bi bi-chat-dots me-2"></i>Mensaje de {{ message.name }}
+                        </h4>
+                        <span class="badge bg-{{ message.get_status_color }} fs-6">
+                            {{ message.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Información del remitente -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-2">
+                                <i class="bi bi-person me-1"></i>Información del remitente
+                            </h6>
+                            <div class="bg-light rounded p-3">
+                                <p class="mb-2">
+                                    <strong>Nombre:</strong> {{ message.name }}
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Email:</strong> 
+                                    <a href="mailto:{{ message.email }}">{{ message.email }}</a>
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Teléfono:</strong> 
+                                    <a href="tel:{{ message.phone }}">{{ message.phone }}</a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-2">
+                                <i class="bi bi-info-circle me-1"></i>Detalles del mensaje
+                            </h6>
+                            <div class="bg-light rounded p-3">
+                                <p class="mb-2">
+                                    <strong>Motivo:</strong> 
+                                    <span class="badge bg-info">{{ message.get_reason_display }}</span>
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Fecha:</strong> {{ message.created_at|date:"d/m/Y H:i" }}
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Última actualización:</strong> {{ message.updated_at|date:"d/m/Y H:i" }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje original -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">
+                            <i class="bi bi-chat-left-text me-1"></i>Mensaje original
+                        </h6>
+                        <div class="border rounded p-3" style="background-color: #f8f9fa;">
+                            <p class="mb-0" style="white-space: pre-wrap;">{{ message.message }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Respuesta del admin -->
+                    {% if message.response %}
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">
+                            <i class="bi bi-reply me-1"></i>Respuesta del administrador
+                        </h6>
+                        <div class="border rounded p-3 border-success" style="background-color: #f0f8f0;">
+                            <p class="mb-2" style="white-space: pre-wrap;">{{ message.response }}</p>
+                            {% if message.attended_by %}
+                            <small class="text-success">
+                                <i class="bi bi-person-check me-1"></i>
+                                Respondido por: {{ message.attended_by.username }}
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Acciones rápidas -->
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="mailto:{{ message.email }}?subject=Re: {{ message.get_reason_display }}&body=Hola {{ message.name }},%0D%0A%0D%0AGracias por contactarnos..." 
+                           class="btn btn-primary">
+                            <i class="bi bi-envelope me-1"></i>Responder por Email
+                        </a>
+                        <a href="tel:{{ message.phone }}" class="btn btn-success">
+                            <i class="bi bi-telephone me-1"></i>Llamar
+                        </a>
+                        <a href="{% url 'list-contact-messages' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Volver a la lista
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de gestión -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-gear me-2"></i>Gestionar Mensaje
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <!-- Estado del mensaje -->
+                        <div class="mb-3">
+                            <label for="status" class="form-label fw-bold">
+                                <i class="bi bi-flag me-1"></i>Estado del mensaje
+                            </label>
+                            <select id="status" name="status" class="form-select">
+                                {% for value, label in status_choices %}
+                                    <option value="{{ value }}" 
+                                            {% if message.status == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Respuesta -->
+                        <div class="mb-3">
+                            <label for="response" class="form-label fw-bold">
+                                <i class="bi bi-chat-left-dots me-1"></i>Respuesta/Notas internas
+                            </label>
+                            <textarea id="response" name="response" class="form-control" rows="6" 
+                                      placeholder="Escribe tu respuesta o notas sobre este mensaje...">{{ message.response|default:'' }}</textarea>
+                            <div class="form-text">
+                                Esta respuesta se guardará como nota interna. Para responder al cliente, usa el botón "Responder por Email".
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-check-lg me-2"></i>Actualizar Mensaje
+                        </button>
+                    </form>
+
+                    <!-- Información adicional -->
+                    <hr class="my-4">
+                    
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">
+                            <i class="bi bi-clock-history me-1"></i>Historial
+                        </h6>
+                        <div class="bg-light rounded p-3">
+                            <small class="d-block mb-1">
+                                <strong>Creado:</strong> {{ message.created_at|date:"d/m/Y H:i" }}
+                            </small>
+                            <small class="d-block mb-1">
+                                <strong>Actualizado:</strong> {{ message.updated_at|date:"d/m/Y H:i" }}
+                            </small>
+                            {% if message.attended_by %}
+                            <small class="d-block text-success">
+                                <strong>Atendido por:</strong> {{ message.attended_by.username }}
+                            </small>
+                            {% else %}
+                            <small class="d-block text-warning">
+                                <strong>Estado:</strong> Sin asignar
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Acciones peligrosas -->
+                    <div class="border-top pt-3">
+                        <h6 class="text-danger mb-2">
+                            <i class="bi bi-exclamation-triangle me-1"></i>Zona peligrosa
+                        </h6>
+                        <a href="{% url 'delete-contact-message' message.id %}" 
+                           class="btn btn-outline-danger btn-sm w-100"
+                           onclick="return confirm('¿Estás seguro de que quieres eliminar este mensaje? Esta acción no se puede deshacer.')">
+                            <i class="bi bi-trash me-1"></i>Eliminar mensaje
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mensajes de alerta -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 1050;">
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% endblock %}

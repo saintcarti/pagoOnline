@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-s+*f-g*adk$$+!@&z=sdpb$uvg-k!4d6)_ky)vgh_)5vtebrik
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1','3f8c-200-86-235-234.ngrok-free.app']
+ALLOWED_HOSTS = ['127.0.0.1','3f8c-200-86-235-234.ngrok-free.app', 'testserver']
 CSRF_TRUSTED_ORIGINS = ['https://3f8c-200-86-235-234.ngrok-free.app']
 
 
@@ -66,6 +66,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'miPaypal.context_processors.cart_context',
             ],
         },
     },
@@ -141,3 +142,5 @@ PAYPAL_TEST=True
 PAYPAL_RECEIVER_EMAIL = 'sb-kdseq44191791@business.example.com'
 
 LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = 'login-page'  # URL name para login
+LOGIN_REDIRECT_URL = '/'  # Por defecto después del login

@@ -98,7 +98,7 @@
   <div class="row row-cols-1 row-cols-md-4 g-4">
     {% for product in products %}
       <div class="col">
-        <div class="card h-100 text-center" style="max-width: 450px; margin: auto;">
+        <div class="card h-100 text-center" id="product-{{ product.id }}" style="max-width: 450px; margin: auto;">
           <img src="{{ product.image }}" class="card-img-top" style="max-height: 300px; object-fit: cover;" alt="{{ product.name }}">
           <div class="card-body">
             <h5 class="card-title">{{ product.name }}</h5>
@@ -107,7 +107,7 @@
               <p class="card-text"><small class="text-muted">Marca: {{ product.brand.name }}</small></p>
             {% endif %}
           </div>
-          <form method="POST" action="{% url 'add_to_cart' product.id %}">
+          <form method="POST" action="{% url 'add_to_cart' product.id %}?next={% url 'products-page' %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.brand %}&brand={{ request.GET.brand }}{% endif %}{% if request.GET.page %}&page={{ request.GET.page }}{% endif %}#product-{{ product.id }}">
               {% csrf_token %}
               <button type="submit" class="btn btn-primary mb-3">Agregar al carrito</button>
           </form>
@@ -202,4 +202,92 @@
   {% endif %}
   
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejar formularios de agregar al carrito con AJAX
+    const addToCartForms = document.querySelectorAll('form[action*="add_to_cart"]');
+    
+    addToCartForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const button = this.querySelector('button[type="submit"]');
+            const originalText = button.innerHTML;
+            
+            // Cambiar texto del botón
+            button.innerHTML = '<i class="bi bi-check-circle me-1"></i>¡Agregado!';
+            button.classList.remove('btn-primary');
+            button.classList.add('btn-success');
+            button.disabled = true;
+            
+            // Enviar formulario con AJAX
+            fetch(this.action, {
+                method: 'POST',
+                body: new FormData(this),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Actualizar contador del carrito
+                    updateCartCounter();
+                    
+                    // Restaurar botón después de 2 segundos
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.classList.remove('btn-success');
+                        button.classList.add('btn-primary');
+                        button.disabled = false;
+                    }, 2000);
+                } else {
+                    throw new Error('Error al agregar al carrito');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Restaurar botón en caso de error
+                button.innerHTML = originalText;
+                button.classList.remove('btn-success');
+                button.classList.add('btn-primary');
+                button.disabled = false;
+                alert('Error al agregar el producto al carrito');
+            });
+        });
+    });
+    
+    // Función para actualizar el contador del carrito
+    function updateCartCounter() {
+        fetch('/cart/count/', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const cartBadge = document.querySelector('.navbar .badge');
+            const cartIcon = document.querySelector('.navbar .bi-cart-fill').parentElement;
+            
+            if (data.cart_count > 0) {
+                if (cartBadge) {
+                    cartBadge.textContent = data.cart_count;
+                } else {
+                    // Crear badge si no existe
+                    const badge = document.createElement('span');
+                    badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
+                    badge.textContent = data.cart_count;
+                    cartIcon.appendChild(badge);
+                }
+            } else {
+                if (cartBadge) {
+                    cartBadge.remove();
+                }
+            }
+        })
+        .catch(error => console.error('Error updating cart counter:', error));
+    }
+});
+</script>
 {% endblock %}

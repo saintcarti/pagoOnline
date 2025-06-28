@@ -1,0 +1,321 @@
+{% extends 'dashboard-panel/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-user me-2"></i>
+            Detalles del Usuario: {{ user_detail.username }}
+        </h1>
+        <div>
+            <a href="{% url 'edit-user' user_detail.id %}" class="btn btn-primary me-2">
+                <i class="fas fa-edit me-1"></i> Editar Usuario
+            </a>
+            <a href="{% url 'list-user' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Volver al Listado
+            </a>
+        </div>
+    </div>
+
+    <style>
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+        }
+
+        .sidebar {
+            position: fixed;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar {
+                width: 100%;
+                position: relative;
+            }
+        }
+
+        .info-card {
+            transition: transform 0.2s;
+        }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+        }
+    </style>
+
+    <div class="row">
+        <!-- Información del perfil -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4 info-card">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <img src="{% static 'images/default-profile.jpg' %}" 
+                             alt="{{ user_detail.username }}" 
+                             class="rounded-circle profile-avatar mb-3">
+                    </div>
+                    <h4 class="card-title">
+                        {% if user_detail.get_full_name %}
+                            {{ user_detail.get_full_name }}
+                        {% else %}
+                            {{ user_detail.username }}
+                        {% endif %}
+                    </h4>
+                    <p class="card-text text-muted">@{{ user_detail.username }}</p>
+                    <span class="badge bg-{% if user_detail.rol == 'admin' %}danger{% elif user_detail.rol == 'staff' %}warning text-dark{% else %}primary{% endif %} fs-6">
+                        {{ user_detail.get_rol_display }}
+                    </span>
+                    <div class="mt-3">
+                        {% if user_detail.is_active %}
+                        <span class="badge bg-success fs-6">
+                            <i class="fas fa-check-circle me-1"></i>Activo
+                        </span>
+                        {% else %}
+                        <span class="badge bg-secondary fs-6">
+                            <i class="fas fa-times-circle me-1"></i>Inactivo
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="card shadow mb-4 info-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Estadísticas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-primary">{{ user_messages_count }}</h4>
+                                <small class="text-muted">Mensajes Enviados</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info">
+                                {% if user_detail.last_login %}
+                                    {{ user_detail.last_login|timesince }}
+                                {% else %}
+                                    Nunca
+                                {% endif %}
+                            </h4>
+                            <small class="text-muted">Última Conexión</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información detallada -->
+        <div class="col-lg-8">
+            <!-- Información Personal -->
+            <div class="card shadow mb-4 info-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-circle me-2"></i>
+                        Información Personal
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted">Nombre de Usuario:</label>
+                                <p class="mb-0">{{ user_detail.username }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted">Correo Electrónico:</label>
+                                <p class="mb-0">
+                                    <i class="fas fa-envelope me-2"></i>{{ user_detail.email }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted">Nombre:</label>
+                                <p class="mb-0">
+                                    {% if user_detail.first_name %}
+                                        {{ user_detail.first_name }}
+                                    {% else %}
+                                        <span class="text-muted">No especificado</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted">Apellido:</label>
+                                <p class="mb-0">
+                                    {% if user_detail.last_name %}
+                                        {{ user_detail.last_name }}
+                                    {% else %}
+                                        <span class="text-muted">No especificado</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted">RUT:</label>
+                                <p class="mb-0">
+                                    {% if user_detail.rut %}
+                                        <i class="fas fa-id-card me-2"></i>{{ user_detail.rut }}
+                                    {% else %}
+                                        <span class="text-muted">No especificado</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted">Teléfono:</label>
+                                <p class="mb-0">
+                                    {% if user_detail.telefono %}
+                                        <i class="fas fa-phone me-2"></i>{{ user_detail.telefono }}
+                                    {% else %}
+                                        <span class="text-muted">No especificado</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-muted">Dirección:</label>
+                        <p class="mb-0">
+                            {% if user_detail.direccion %}
+                                <i class="fas fa-map-marker-alt me-2"></i>{{ user_detail.direccion }}
+                            {% else %}
+                                <span class="text-muted">No especificada</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del Sistema -->
+            <div class="card shadow mb-4 info-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>
+                        Información del Sistema
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted">Fecha de Registro:</label>
+                                <p class="mb-0">
+                                    <i class="fas fa-calendar-plus me-2"></i>{{ date_joined_formatted }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted">Último Acceso:</label>
+                                <p class="mb-0">
+                                    <i class="fas fa-clock me-2"></i>{{ last_login_formatted }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted">Rol del Sistema:</label>
+                                <p class="mb-0">
+                                    <span class="badge bg-{% if user_detail.rol == 'admin' %}danger{% elif user_detail.rol == 'staff' %}warning text-dark{% else %}primary{% endif %}">
+                                        {{ user_detail.get_rol_display }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-muted">Permisos:</label>
+                                <div>
+                                    {% if user_detail.is_superuser %}
+                                    <span class="badge bg-danger me-1">
+                                        <i class="fas fa-crown me-1"></i>Superusuario
+                                    </span>
+                                    {% endif %}
+                                    {% if user_detail.is_staff %}
+                                    <span class="badge bg-warning text-dark me-1">
+                                        <i class="fas fa-user-shield me-1"></i>Staff
+                                    </span>
+                                    {% endif %}
+                                    {% if not user_detail.is_superuser and not user_detail.is_staff %}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-user me-1"></i>Usuario Regular
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones Rápidas -->
+            <div class="card shadow mb-4 info-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tools me-2"></i>
+                        Acciones Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2 d-md-flex">
+                        <a href="{% url 'edit-user' user_detail.id %}" class="btn btn-primary me-md-2">
+                            <i class="fas fa-edit me-1"></i>
+                            Editar Usuario
+                        </a>
+                        {% if user_detail.is_active %}
+                        <a href="{% url 'delete-user' user_detail.id %}" class="btn btn-warning me-md-2">
+                            <i class="fas fa-user-times me-1"></i>
+                            Desactivar Usuario
+                        </a>
+                        {% else %}
+                        <a href="#" class="btn btn-success me-md-2">
+                            <i class="fas fa-user-check me-1"></i>
+                            Activar Usuario
+                        </a>
+                        {% endif %}
+                        <a href="mailto:{{ user_detail.email }}" class="btn btn-info">
+                            <i class="fas fa-envelope me-1"></i>
+                            Enviar Email
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

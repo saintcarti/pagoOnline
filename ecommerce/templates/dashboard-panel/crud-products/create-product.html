@@ -2,128 +2,479 @@
 {% load static %}
 
 {% block content %}
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<div class="main-content">
-  <div style="max-width: 800px; background: #F2E8D5; 
-              padding: 30px; border-radius: 15px; 
-              border: solid 0.5px #D8C3A5;
-              box-shadow: 0 4px 8px rgba(216, 195, 165, 0.5);
-              margin-left: 20px;">
-    <h2 style="color: #5A3E2B; margin-bottom: 25px;">Crear Nuevo Producto</h2>
-    
-    <form method="post" action="{% url 'create-product' %}" enctype="multipart/form-data">
-        {% csrf_token %}
-    
-        <div class="row">
-            <!-- Columna izquierda -->
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label style="color: #5A3E2B;" for="name" class="form-label">Nombre del Producto</label>
-                    <input type="text" class="form-control" id="name" name="name" 
-                           placeholder="Ingresa el nombre del producto"
-                           required
-                           minlength="8"
-                           maxlength="250">
-                </div>
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-plus-circle me-2"></i>
+            Crear Nuevo Producto
+        </h1>
+        <div>
+            <a href="{% url 'list-products' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Volver al Listado
+            </a>
+        </div>
+    </div>
 
-                <div class="mb-3">
-                    <label style="color: #5A3E2B;" for="description" class="form-label">Descripción</label>
-                    <textarea class="form-control" id="description" name="description" 
-                              rows="3" placeholder="Escribe una descripción..."
-                              required
-                              minlength="8"
-                              maxlength="250"></textarea>
+    <style>
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+        }
+
+        .sidebar {
+            position: fixed;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar {
+                width: 100%;
+                position: relative;
+            }
+        }
+
+        .form-card {
+            transition: transform 0.2s;
+            border: none;
+            border-radius: 15px;
+        }
+
+        .form-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .form-control:focus {
+            border-color: #5A3E2B;
+            box-shadow: 0 0 0 0.25rem rgba(90, 62, 43, 0.25);
+        }
+
+        .form-select:focus {
+            border-color: #5A3E2B;
+            box-shadow: 0 0 0 0.25rem rgba(90, 62, 43, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #5A3E2B 0%, #8B4513 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #5A3E2B;
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:hover, .form-select:hover {
+            border-color: #5A3E2B;
+        }
+
+        .card-header-custom {
+            background: linear-gradient(135deg, #5A3E2B 0%, #8B4513 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+        }
+
+        .field-icon {
+            color: #5A3E2B;
+            margin-right: 8px;
+        }
+
+        .alert-custom {
+            border-radius: 10px;
+            border: none;
+        }
+
+        .image-preview {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .image-preview:hover {
+            border-color: #5A3E2B;
+            background: rgba(90, 62, 43, 0.05);
+        }
+
+        .preview-image {
+            max-height: 200px;
+            width: auto;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Select2 customization */
+        .select2-container .select2-selection--multiple {
+            border-radius: 10px !important;
+            border: 2px solid #dee2e6 !important;
+            padding: 8px 12px !important;
+            min-height: 48px !important;
+        }
+
+        .select2-container .select2-selection--multiple:focus-within {
+            border-color: #5A3E2B !important;
+            box-shadow: 0 0 0 0.25rem rgba(90, 62, 43, 0.25) !important;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #5A3E2B !important;
+            border: none !important;
+            color: white !important;
+            border-radius: 8px !important;
+        }
+    </style>
+
+    <div class="row justify-content-center">
+        <div class="col-xl-10 col-lg-12">
+            <div class="card shadow-lg form-card">
+                <div class="card-header-custom">
+                    <h4 class="mb-0">
+                        <i class="fas fa-box-open me-2"></i>
+                        Registro de Nuevo Producto
+                    </h4>
+                    <p class="mb-0 opacity-75">Complete la información para agregar un nuevo producto al catálogo</p>
                 </div>
                 
-                <div class="mb-3">
-                    <label style="color: #5A3E2B;" for="brand" class="form-label">Marca</label>
-                    <select class="form-control" id="brand" name="brand">
-                        <option value="">Selecciona una marca</option>
-                        {% for brand in brands %}
-                            <option value="{{ brand.id }}">
-                                {{ brand.name }}
-                            </option>
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-custom alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
                         {% endfor %}
-                    </select>
-                </div>
-            </div>
-            
-            <!-- Columna derecha -->
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label style="color: #5A3E2B;" for="price" class="form-label">Precio</label>
-                    <input type="number" class="form-control" id="price" name="price" 
-                           placeholder="Ej: 9990"
-                           required
-                           min="1"
-                           max="9999999">
-                </div>
+                    {% endif %}
 
-                <div class="mb-3">
-                    <label style="color: #5A3E2B;" for="image" class="form-label">Imagen del Producto (URL)</label>
-                    <input type="url" class="form-control" id="image" name="image" 
-                           placeholder="https://ejemplo.com/imagen.jpg"
-                           required>
-                </div>
-                
-                <div class="mb-3">
-                    <label style="color: #5A3E2B;" for="categories" class="form-label">Categorías</label>
-                    <select class="form-control" id="categories" name="categories" multiple>
-                        {% for category in categories %}
-                            <option value="{{ category.id }}">
-                                {{ category.name }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                    <small class="form-text text-muted">Mantén presionado Ctrl para seleccionar múltiples categorías</small>
+                    <form method="POST" action="{% url 'create-product' %}" enctype="multipart/form-data" id="createProductForm">
+                        {% csrf_token %}
+                        
+                        <!-- Información Básica -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-muted mb-3">
+                                    <i class="fas fa-info-circle field-icon"></i>
+                                    Información Básica
+                                </h5>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Nombre del Producto -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_name" class="form-label">
+                                    <i class="fas fa-tag field-icon"></i>Nombre del Producto
+                                </label>
+                                <input type="text" class="form-control" id="id_name" name="name" 
+                                       placeholder="Ingresa el nombre del producto" 
+                                       required minlength="8" maxlength="250">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Mínimo 8 caracteres, máximo 250
+                                </div>
+                            </div>
+
+                            <!-- Precio -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_price" class="form-label">
+                                    <i class="fas fa-dollar-sign field-icon"></i>Precio
+                                </label>
+                                <input type="number" class="form-control" id="id_price" name="price" 
+                                       placeholder="Ej: 9990" 
+                                       required min="1" max="9999999">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Precio en pesos chilenos
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Descripción -->
+                            <div class="col-12 mb-3">
+                                <label for="id_description" class="form-label">
+                                    <i class="fas fa-align-left field-icon"></i>Descripción
+                                </label>
+                                <textarea class="form-control" id="id_description" name="description" 
+                                          rows="4" placeholder="Escribe una descripción detallada del producto..."
+                                          required minlength="8" maxlength="999"></textarea>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Mínimo 8 caracteres, máximo 999. Describe las características principales del producto
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Clasificación -->
+                        <div class="row mb-4 mt-4">
+                            <div class="col-12">
+                                <h5 class="text-muted mb-3">
+                                    <i class="fas fa-layer-group field-icon"></i>
+                                    Clasificación
+                                </h5>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Marca -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_brand" class="form-label">
+                                    <i class="fas fa-copyright field-icon"></i>Marca
+                                </label>
+                                <select class="form-select" id="id_brand" name="brand">
+                                    <option value="">Selecciona una marca</option>
+                                    {% for brand in brands %}
+                                        <option value="{{ brand.id }}">{{ brand.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Campo opcional. Selecciona la marca del producto
+                                </div>
+                            </div>
+
+                            <!-- Categorías -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_categories" class="form-label">
+                                    <i class="fas fa-list field-icon"></i>Categorías
+                                </label>
+                                <select class="form-select" id="id_categories" name="categories" multiple>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Campo opcional. Puedes seleccionar múltiples categorías
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Imagen -->
+                        <div class="row mb-4 mt-4">
+                            <div class="col-12">
+                                <h5 class="text-muted mb-3">
+                                    <i class="fas fa-camera field-icon"></i>
+                                    Imagen del Producto
+                                </h5>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- URL de Imagen -->
+                            <div class="col-md-8 mb-3">
+                                <label for="id_image" class="form-label">
+                                    <i class="fas fa-link field-icon"></i>URL de la Imagen
+                                </label>
+                                <input type="url" class="form-control" id="id_image" name="image" 
+                                       placeholder="https://ejemplo.com/imagen.jpg" required>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Ingresa la URL completa de la imagen (debe comenzar con http:// o https://)
+                                </div>
+                            </div>
+
+                            <!-- Preview -->
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-eye field-icon"></i>Vista Previa
+                                </label>
+                                <div class="image-preview" id="image-preview-container">
+                                    <i class="fas fa-image fa-3x text-muted mb-2"></i>
+                                    <p class="text-muted mb-0">
+                                        Ingresa una URL para ver la vista previa
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4 pt-3 border-top">
+                            <a href="{% url 'list-products' %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-1"></i>Crear Producto
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-
-        <div class="row">
-            <div class="col-12">
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <button type="submit" class="btn btn-primary me-md-2">Crear Producto</button>
-                    <a href="{% url 'list-products' %}" class="btn btn-secondary">Cancelar</a>
-                </div>
-            </div>
-        </div>
-    </form>
-  </div>
+    </div>
 </div>
+
+<!-- Scripts -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
-$(document).ready(function() {
-    $('#categories').select2({
-        placeholder: "Selecciona categorías",
-        allowClear: true
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar Select2 para categorías
+    if (typeof $ !== 'undefined') {
+        $('#id_categories').select2({
+            placeholder: "Selecciona categorías",
+            allowClear: true,
+            width: '100%'
+        });
+    }
+
+    // Agregar clases de Bootstrap a los campos del formulario
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="url"], textarea, select:not(#id_categories)');
+    inputs.forEach(input => {
+        if (!input.classList.contains('form-control') && !input.classList.contains('form-select')) {
+            if (input.tagName.toLowerCase() === 'select') {
+                input.classList.add('form-select');
+            } else {
+                input.classList.add('form-control');
+            }
+        }
     });
+
+    // Efectos de focus en los campos
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+            this.parentElement.style.transition = 'all 0.2s ease';
+        });
+
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    });
+
+    // Preview de imagen URL
+    const imageInput = document.getElementById('id_image');
+    const previewContainer = document.getElementById('image-preview-container');
+    
+    if (imageInput && previewContainer) {
+        imageInput.addEventListener('input', function(e) {
+            const url = e.target.value.trim();
+            
+            if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                previewContainer.innerHTML = `
+                    <img src="${url}" alt="Preview" class="preview-image"
+                         onload="this.style.display='block'; this.nextElementSibling.style.display='none';"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="text-danger">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                        <p class="mb-0">Error al cargar la imagen</p>
+                        <small>Verifica que la URL sea correcta</small>
+                    </div>
+                `;
+            } else if (url) {
+                previewContainer.innerHTML = `
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-2"></i>
+                    <p class="text-warning mb-0">
+                        URL inválida
+                    </p>
+                    <small>Debe comenzar con http:// o https://</small>
+                `;
+            } else {
+                previewContainer.innerHTML = `
+                    <i class="fas fa-image fa-3x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">
+                        Ingresa una URL para ver la vista previa
+                    </p>
+                `;
+            }
+        });
+    }
+
+    // Validación del formulario
+    const form = document.getElementById('createProductForm');
+    form.addEventListener('submit', function(e) {
+        const name = document.getElementById('id_name').value.trim();
+        const price = document.getElementById('id_price').value;
+        const description = document.getElementById('id_description').value.trim();
+        const imageUrl = document.getElementById('id_image').value.trim();
+        
+        // Validar nombre
+        if (name.length < 8 || name.length > 250) {
+            e.preventDefault();
+            alert('El nombre del producto debe tener entre 8 y 250 caracteres');
+            document.getElementById('id_name').focus();
+            return;
+        }
+        
+        // Validar precio
+        if (parseFloat(price) <= 0 || parseFloat(price) > 9999999) {
+            e.preventDefault();
+            alert('El precio debe ser mayor a 0 y menor a 10,000,000');
+            document.getElementById('id_price').focus();
+            return;
+        }
+        
+        // Validar descripción
+        if (description.length < 8 || description.length > 999) {
+            e.preventDefault();
+            alert('La descripción debe tener entre 8 y 999 caracteres');
+            document.getElementById('id_description').focus();
+            return;
+        }
+        
+        // Validar URL de imagen
+        if (!imageUrl || (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://'))) {
+            e.preventDefault();
+            alert('Debes ingresar una URL válida para la imagen (debe comenzar con http:// o https://)');
+            document.getElementById('id_image').focus();
+            return;
+        }
+        
+        // Confirmar creación
+        const confirmation = confirm('¿Estás seguro de que quieres crear este producto?');
+        if (!confirmation) {
+            e.preventDefault();
+        }
+    });
+
+    // Contador de caracteres para descripción
+    const descriptionInput = document.getElementById('id_description');
+    if (descriptionInput) {
+        const createCounter = () => {
+            const counter = document.createElement('div');
+            counter.className = 'form-text text-end';
+            counter.style.fontSize = '0.8em';
+            return counter;
+        };
+
+        const counter = createCounter();
+        descriptionInput.parentElement.appendChild(counter);
+
+        const updateCounter = () => {
+            const length = descriptionInput.value.length;
+            const max = 999;
+            counter.innerHTML = `<span class="${length > max ? 'text-danger' : length > max * 0.8 ? 'text-warning' : 'text-muted'}">${length}/${max} caracteres</span>`;
+        };
+
+        descriptionInput.addEventListener('input', updateCounter);
+        updateCounter(); // Inicializar contador
+    }
 });
 </script>
-
-
-<style>
-  .main-content {
-    margin-left: 280px; /* Igual al ancho del sidebar */
-    padding: 20px;
-  }
-  
-  .sidebar {
-    position: fixed;
-    height: 100%;
-    top: 0;
-    left: 0;
-  }
-  
-  @media (max-width: 768px) {
-    .main-content {
-      margin-left: 0;
-    }
-    
-    .sidebar {
-      width: 100%;
-      position: relative;
-    }
-  }
-</style>
 {% endblock %}

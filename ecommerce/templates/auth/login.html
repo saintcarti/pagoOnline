@@ -1,38 +1,252 @@
-{%extends 'base.html'%}
+{%extends 'auth_base.html'%}
 {%load static%}
+
+{% block title %}Iniciar Sesión - Ferremas{% endblock %}
+
 {%block content%}
 
-<link rel="stylesheet" href="{%static 'css/login.css'%}">
-
-<div class="login-container">
-    <div class="login-box">
-    
-        <form method="POST" action="{% url 'login-page' %}">
-            {% csrf_token %}
-            <h5 style="color: #5A3E2B;">Inicio de sesión</h5>
-
-            <div>
-                <label style="color: #5A3E2B;" for="inputUsername" class="form-label">Nombre de usuario:</label>
-                <input type="text" name="username" id="inputUsername" class="form-control" aria-describedby="UsernameError" value="{{ request.POST.username }}">
-            </div>
-
-            <div>
-                <label style="color: #5A3E2B;" for="inputPassword" class="form-label">Contraseña:</label>
-                <input type="password" name="password" id="inputPassword" class="form-control" aria-describedby="passwordError">
-            </div>
-
-            {% if error %}
-                <div style="color: red; margin-top: 10px;">
-                    {{ error }}
+<div class="container-fluid" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); min-height: 100vh; padding: 0;">
+    <div class="row min-vh-100 align-items-center justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6 col-xl-4">
+            <div class="card shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
+                <!-- Header con logo -->
+                <div class="card-header text-center py-4" style="background: linear-gradient(135deg, #5A3E2B 0%, #8B4513 100%); border: none;">
+                    <img src="{% static 'images/Ferremas.png' %}" alt="Ferremas Logo" style="height: 50px;" class="mb-2">
+                    <h3 class="text-white mb-0 fw-bold">Iniciar Sesión</h3>
+                    <p class="text-white-50 mb-0">Accede a tu cuenta de Ferremas</p>
                 </div>
-            {% endif %}
 
-            <div style="margin-top: 35px;">
-                <button type="submit" class="btn btn-dark" style="border-radius: 12px; padding: 8px 30px; border: 1px solid black;">Entrar</button>
+                <div class="card-body p-5">
+                    <form method="POST" action="{% url 'login-page' %}" id="loginForm">
+                        {% csrf_token %}
+                        {% if request.GET.next %}
+                            <input type="hidden" name="next" value="{{ request.GET.next }}">
+                        {% endif %}
+                        
+                        <!-- Campo de usuario -->
+                        <div class="mb-4">
+                            <label for="inputUsername" class="form-label fw-semibold" style="color: #5A3E2B;">
+                                <i class="bi bi-person-fill me-2"></i>Nombre de usuario
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text border-end-0" style="background: transparent; border-color: #dee2e6;">
+                                    <i class="bi bi-person text-muted"></i>
+                                </span>
+                                <input type="text" 
+                                       name="username" 
+                                       id="inputUsername" 
+                                       class="form-control border-start-0 ps-0" 
+                                       placeholder="Ingresa tu usuario"
+                                       value="{{ request.POST.username }}"
+                                       style="border-radius: 0 10px 10px 0; box-shadow: none; border-color: #dee2e6;"
+                                       required>
+                            </div>
+                        </div>
 
-                <p style="margin-top: 15px; color: #5A3E2B;">¿Aún no tienes tu cuenta? <a href="{%url 'register-page'%}">Regístrate</a></p>
+                        <!-- Campo de contraseña -->
+                        <div class="mb-4">
+                            <label for="inputPassword" class="form-label fw-semibold" style="color: #5A3E2B;">
+                                <i class="bi bi-lock-fill me-2"></i>Contraseña
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text border-end-0" style="background: transparent; border-color: #dee2e6;">
+                                    <i class="bi bi-lock text-muted"></i>
+                                </span>
+                                <input type="password" 
+                                       name="password" 
+                                       id="inputPassword" 
+                                       class="form-control border-start-0 border-end-0 ps-0" 
+                                       placeholder="Ingresa tu contraseña"
+                                       style="box-shadow: none; border-color: #dee2e6;"
+                                       required>
+                                <button type="button" 
+                                        class="btn border-start-0" 
+                                        id="togglePassword"
+                                        style="background: transparent; border-color: #dee2e6; border-radius: 0 10px 10px 0;">
+                                    <i class="bi bi-eye text-muted" id="toggleIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Mostrar errores -->
+                        {% if error %}
+                        <div class="alert alert-danger d-flex align-items-center" role="alert" style="border-radius: 10px; border: none; background-color: #f8d7da;">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            {{ error }}
+                        </div>
+                        {% endif %}
+
+                        <!-- Checkbox recordar -->
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="rememberMe" style="border-radius: 4px;">
+                            <label class="form-check-label text-muted" for="rememberMe">
+                                Recordar mi sesión
+                            </label>
+                        </div>
+
+                        <!-- Botón de login -->
+                        <div class="d-grid mb-4">
+                            <button type="submit" 
+                                    class="btn btn-lg fw-semibold" 
+                                    style="background: linear-gradient(135deg, #5A3E2B 0%, #8B4513 100%); 
+                                           border: none; 
+                                           border-radius: 12px; 
+                                           color: white; 
+                                           padding: 12px;
+                                           transition: all 0.3s ease;">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>
+                                Iniciar Sesión
+                            </button>
+                        </div>
+
+                        <!-- Separador -->
+                        <div class="text-center mb-4">
+                            <div class="d-flex align-items-center">
+                                <hr class="flex-grow-1">
+                                <span class="px-3 text-muted small">o</span>
+                                <hr class="flex-grow-1">
+                            </div>
+                        </div>
+
+                        <!-- Enlaces adicionales -->
+                        <div class="text-center">
+                            <p class="mb-3" style="color: #5A3E2B;">
+                                ¿Aún no tienes cuenta?
+                            </p>
+                            <a href="{% url 'register-page' %}" 
+                               class="btn btn-outline-dark fw-semibold w-100" 
+                               style="border-radius: 12px; 
+                                      padding: 12px 24px; 
+                                      border-color: #5A3E2B; 
+                                      color: #5A3E2B;
+                                      transition: all 0.3s ease;
+                                      border-width: 2px;">
+                                <i class="bi bi-person-plus me-2"></i>
+                                Crear cuenta nueva
+                            </a>
+                        </div>
+
+                        <!-- Link de ayuda -->
+                        <div class="text-center mt-4">
+                            <a href="{% url 'contact-page' %}" class="text-decoration-none text-muted small">
+                                <i class="bi bi-question-circle me-1"></i>
+                                ¿Necesitas ayuda?
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </form>
+
+            <!-- Información adicional -->
+            <div class="text-center mt-4">
+                <p class="text-muted small mb-0">
+                    Al iniciar sesión aceptas nuestros 
+                    <a href="#" class="text-decoration-none" style="color: #5A3E2B;">Términos y Condiciones</a>
+                    y 
+                    <a href="#" class="text-decoration-none" style="color: #5A3E2B;">Política de Privacidad</a>
+                </p>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+/* Efectos hover para botones */
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* Hover específico para botón outline */
+.btn-outline-dark:hover {
+    background-color: #5A3E2B !important;
+    border-color: #5A3E2B !important;
+    color: white !important;
+}
+
+/* Estilo para input focus */
+.form-control:focus {
+    border-color: #5A3E2B;
+    box-shadow: 0 0 0 0.25rem rgba(90, 62, 43, 0.25);
+}
+
+/* Estilo para input group focus */
+.input-group:focus-within .input-group-text {
+    border-color: #5A3E2B;
+}
+
+.input-group:focus-within .form-control {
+    border-color: #5A3E2B;
+}
+
+/* Animación de carga para botón */
+.btn[type="submit"]:active {
+    transform: scale(0.98);
+}
+
+/* Estilo del card */
+.card {
+    transition: all 0.3s ease;
+}
+
+/* Hover en enlaces */
+a:hover {
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+/* Responsividad adicional */
+@media (max-width: 576px) {
+    .card-body {
+        padding: 2rem !important;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Función para mostrar/ocultar contraseña
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('inputPassword');
+    const toggleIcon = document.getElementById('toggleIcon');
+
+    togglePassword.addEventListener('click', function() {
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.className = 'bi bi-eye-slash text-muted';
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.className = 'bi bi-eye text-muted';
+        }
+    });
+
+    // Función para manejar el login case-insensitive
+    const loginForm = document.getElementById('loginForm');
+    const usernameInput = document.getElementById('inputUsername');
+
+    loginForm.addEventListener('submit', function(e) {
+        // Convertir el username a lowercase antes de enviar
+        usernameInput.value = usernameInput.value.toLowerCase().trim();
+    });
+
+    // Validación en tiempo real
+    usernameInput.addEventListener('input', function() {
+        this.value = this.value.toLowerCase().trim();
+    });
+
+    // Efecto de escritura en inputs
+    const inputs = document.querySelectorAll('.form-control');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+            this.parentElement.style.transition = 'all 0.2s ease';
+        });
+
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    });
+});
+</script>
+
 {%endblock%}

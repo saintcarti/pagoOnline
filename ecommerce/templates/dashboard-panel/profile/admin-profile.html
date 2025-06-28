@@ -1,0 +1,272 @@
+{% extends 'dashboard-panel/dashboard.html' %}
+
+{% block title %}Mi Perfil - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <style>
+  .main-content {
+    margin-left: 280px; /* Igual al ancho del sidebar */
+    padding: 20px;
+  }
+
+  .sidebar {
+    position: fixed;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+    }
+
+    .sidebar {
+      width: 100%;
+      position: relative;
+    }
+  }
+</style>
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Mi Perfil</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard-panel-page' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Mi Perfil</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Información del perfil -->
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        {% if user.profile.image %}
+                            <img src="{{ user.profile.image.url }}" alt="Foto de perfil" 
+                                 class="rounded-circle mb-3" width="120" height="120">
+                        {% else %}
+                            <div class="bg-primary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                                 style="width: 120px; height: 120px;">
+                                <i class="fas fa-user fa-3x text-white"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <h4 class="card-title">{{ user.get_full_name|default:user.username }}</h4>
+                    <p class="card-text text-muted">{{ user.get_rol_display }}</p>
+                    <p class="card-text">
+                        <i class="fas fa-envelope me-2"></i>{{ user.email }}
+                    </p>
+                    {% if user.telefono %}
+                    <p class="card-text">
+                        <i class="fas fa-phone me-2"></i>{{ user.telefono }}
+                    </p>
+                    {% endif %}
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar me-2"></i>
+                            Registrado: {{ user.date_joined|date:"d/m/Y" }}
+                        </small>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Estadísticas rápidas -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Mis Estadísticas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-primary">{{ messages_attended }}</h4>
+                                <small class="text-muted">Mensajes Atendidos</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ user.last_login|timesince }}</h4>
+                            <small class="text-muted">Última Conexión</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <!-- Formulario de edición -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Editar Información Personal
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="first_name" class="form-label">
+                                        <i class="fas fa-user me-2"></i>Nombre
+                                    </label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                                           value="{{ user.first_name }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="last_name" class="form-label">
+                                        <i class="fas fa-user me-2"></i>Apellido
+                                    </label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                                           value="{{ user.last_name }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">
+                                        <i class="fas fa-envelope me-2"></i>Correo Electrónico
+                                    </label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="{{ user.email }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="telefono" class="form-label">
+                                        <i class="fas fa-phone me-2"></i>Teléfono
+                                    </label>
+                                    <input type="text" class="form-control" id="telefono" name="telefono" 
+                                           value="{{ user.telefono|default:'' }}" placeholder="+56912345678">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="rut" class="form-label">
+                                <i class="fas fa-id-card me-2"></i>RUT
+                            </label>
+                            <input type="text" class="form-control" id="rut" name="rut" 
+                                   value="{{ user.rut|default:'' }}" placeholder="12.345.678-9">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="direccion" class="form-label">
+                                <i class="fas fa-map-marker-alt me-2"></i>Dirección
+                            </label>
+                            <textarea class="form-control" id="direccion" name="direccion" rows="3" 
+                                      placeholder="Ingrese su dirección completa">{{ user.direccion|default:'' }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="profile_image" class="form-label">
+                                <i class="fas fa-image me-2"></i>Foto de Perfil
+                            </label>
+                            <input type="file" class="form-control" id="profile_image" name="profile_image" 
+                                   accept="image/*">
+                            <div class="form-text">Formatos admitidos: JPG, PNG, GIF. Tamaño máximo: 2MB</div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                Guardar Cambios
+                            </button>
+                            <a href="{% url 'dashboard-panel-page' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Cambiar contraseña -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lock me-2"></i>
+                        Cambiar Contraseña
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'change-password' %}">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="old_password" class="form-label">Contraseña Actual</label>
+                                    <input type="password" class="form-control" id="old_password" name="old_password" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="new_password1" class="form-label">Nueva Contraseña</label>
+                                    <input type="password" class="form-control" id="new_password1" name="new_password1" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="new_password2" class="form-label">Confirmar Nueva Contraseña</label>
+                                    <input type="password" class="form-control" id="new_password2" name="new_password2" required>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-key me-2"></i>
+                            Cambiar Contraseña
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.form-control:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+</style>
+{% endblock %}

@@ -1,75 +1,425 @@
-{%extends 'base.html'%}
+{%extends 'auth_base.html'%}
 {%load static%}
+
+{% block title %}Crear Cuenta - Ferremas{% endblock %}
+
 {%block content%}
 
-<link rel="stylesheet" href="{%static 'css/register.css'%}">
-
-<div class="register-container">
-    <div class="register-box">
-        <form method="POST" action="{% url 'register-page' %}">
-            {% csrf_token %}
-            <h5 style="color: #5A3E2B;">Registro de Usuario</h5>
-    
-            {% if form.errors %}
-                <div class="alert alert-danger">
-                    {% for field, errors in form.errors.items %}
-                        {% for error in errors %}
-                            <p>{{ error }}</p>
-                        {% endfor %}
-                    {% endfor %}
+<div class="container-fluid" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); min-height: 100vh; padding: 0;">
+    <div class="row min-vh-100 align-items-center justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+            <div class="card shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
+                <!-- Header con logo -->
+                <div class="card-header text-center py-4" style="background: linear-gradient(135deg, #5A3E2B 0%, #8B4513 100%); border: none;">
+                    <img src="{% static 'images/Ferremas.png' %}" alt="Ferremas Logo" style="height: 50px;" class="mb-2">
+                    <h3 class="text-white mb-0 fw-bold">Crear Cuenta</h3>
+                    <p class="text-white-50 mb-0">Únete a la familia Ferremas</p>
                 </div>
-            {% endif %}
-    
-            <div class="mb-3">
-                <label style="color: #5A3E2B;" for="id_username" class="form-label">Nombre de usuario:</label>
-                {{ form.username }}
-            </div>
-    
-            <div class="mb-3">
-                <label style="color: #5A3E2B;" for="id_email" class="form-label">Correo electrónico:</label>
-                {{ form.email }}
-            </div>
-    
-            <div class="mb-3">
-                <label style="color: #5A3E2B;" for="id_password1" class="form-label">Contraseña:</label>
-                {{ form.password1 }}
-            </div>
-    
-            <div class="mb-3">
-                <label style="color: #5A3E2B;" for="id_password2" class="form-label">Confirmar contraseña:</label>
-                {{ form.password2 }}
-            </div>
-    
-            <div class="mb-3">
-                <label style="color: #5A3E2B;" for="id_rut" class="form-label">RUT:</label>
-                {{ form.rut }}
-            </div>
-    
-            <div class="mb-3">
-                <label style="color: #5A3E2B;" for="id_telefono" class="form-label">Teléfono:</label>
-                {{ form.telefono }}
-            </div>
-    
-            <div class="mb-3">
-                <label style="color: #5A3E2B;" for="id_direccion" class="form-label">Dirección:</label>
-                {{ form.direccion }}
-            </div>
 
-            {% if error %}
-                <div style="color: red; margin-top: 10px;">
-                    {{ error }}
+                <div class="card-body p-4">
+                    <form method="POST" action="{% url 'register-page' %}" id="registerForm">
+                        {% csrf_token %}
+                        
+                        <!-- Mostrar errores -->
+                        {% if form.errors %}
+                        <div class="alert alert-danger d-flex align-items-center mb-4" role="alert" style="border-radius: 10px; border: none; background-color: #f8d7da;">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <div>
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Nombre y Apellido -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="first_name" class="form-label fw-semibold" style="color: #5A3E2B;">
+                                    <i class="bi bi-person me-2"></i>Nombre
+                                </label>
+                                <input type="text" 
+                                       name="first_name" 
+                                       id="first_name" 
+                                       class="form-control" 
+                                       placeholder="Tu nombre"
+                                       style="border-radius: 10px; border-color: #dee2e6;"
+                                       value="{{ form.first_name.value|default:'' }}"
+                                       required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="last_name" class="form-label fw-semibold" style="color: #5A3E2B;">
+                                    <i class="bi bi-person me-2"></i>Apellido
+                                </label>
+                                <input type="text" 
+                                       name="last_name" 
+                                       id="last_name" 
+                                       class="form-control" 
+                                       placeholder="Tu apellido"
+                                       style="border-radius: 10px; border-color: #dee2e6;"
+                                       value="{{ form.last_name.value|default:'' }}"
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-semibold" style="color: #5A3E2B;">
+                                <i class="bi bi-envelope me-2"></i>Correo Electrónico
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text border-end-0" style="background: transparent; border-color: #dee2e6; border-radius: 10px 0 0 10px;">
+                                    <i class="bi bi-envelope text-muted"></i>
+                                </span>
+                                <input type="email" 
+                                       name="email" 
+                                       id="email" 
+                                       class="form-control border-start-0 ps-0" 
+                                       placeholder="tu@email.com"
+                                       style="border-radius: 0 10px 10px 0; border-color: #dee2e6;"
+                                       value="{{ form.email.value|default:'' }}"
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- RUT y Teléfono -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="rut" class="form-label fw-semibold" style="color: #5A3E2B;">
+                                    <i class="bi bi-credit-card me-2"></i>RUT
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-end-0" style="background: transparent; border-color: #dee2e6; border-radius: 10px 0 0 10px;">
+                                        <i class="bi bi-credit-card text-muted"></i>
+                                    </span>
+                                    <input type="text" 
+                                           name="rut" 
+                                           id="rut" 
+                                           class="form-control border-start-0 ps-0" 
+                                           placeholder="12.345.678-9"
+                                           style="border-radius: 0 10px 10px 0; border-color: #dee2e6;"
+                                           value="{{ form.rut.value|default:'' }}"
+                                           required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="telefono" class="form-label fw-semibold" style="color: #5A3E2B;">
+                                    <i class="bi bi-telephone me-2"></i>Teléfono
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-end-0" style="background: transparent; border-color: #dee2e6; border-radius: 10px 0 0 10px;">
+                                        <i class="bi bi-telephone text-muted"></i>
+                                    </span>
+                                    <input type="tel" 
+                                           name="telefono" 
+                                           id="telefono" 
+                                           class="form-control border-start-0 ps-0" 
+                                           placeholder="+56 9 1234 5678"
+                                           style="border-radius: 0 10px 10px 0; border-color: #dee2e6;"
+                                           value="{{ form.telefono.value|default:'' }}"
+                                           required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dirección -->
+                        <div class="mb-3">
+                            <label for="direccion" class="form-label fw-semibold" style="color: #5A3E2B;">
+                                <i class="bi bi-geo-alt me-2"></i>Dirección
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text border-end-0" style="background: transparent; border-color: #dee2e6; border-radius: 10px 0 0 10px;">
+                                    <i class="bi bi-geo-alt text-muted"></i>
+                                </span>
+                                <textarea name="direccion" 
+                                          id="direccion" 
+                                          rows="2"
+                                          class="form-control border-start-0 ps-0" 
+                                          placeholder="Calle, número, comuna, región..."
+                                          style="border-radius: 0 10px 10px 0; border-color: #dee2e6;"
+                                          required>{{ form.direccion.value|default:'' }}</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Username -->
+                        <div class="mb-3">
+                            <label for="username" class="form-label fw-semibold" style="color: #5A3E2B;">
+                                <i class="bi bi-person-circle me-2"></i>Nombre de Usuario
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text border-end-0" style="background: transparent; border-color: #dee2e6; border-radius: 10px 0 0 10px;">
+                                    <i class="bi bi-person-circle text-muted"></i>
+                                </span>
+                                <input type="text" 
+                                       name="username" 
+                                       id="username" 
+                                       class="form-control border-start-0 ps-0" 
+                                       placeholder="usuario123"
+                                       style="border-radius: 0 10px 10px 0; border-color: #dee2e6;"
+                                       value="{{ form.username.value|default:'' }}"
+                                       required>
+                            </div>
+                            <div class="form-text">Solo letras, números y @/./+/-/_ permitidos.</div>
+                        </div>
+
+                        <!-- Contraseñas -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="password1" class="form-label fw-semibold" style="color: #5A3E2B;">
+                                    <i class="bi bi-lock me-2"></i>Contraseña
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-end-0" style="background: transparent; border-color: #dee2e6; border-radius: 10px 0 0 10px;">
+                                        <i class="bi bi-lock text-muted"></i>
+                                    </span>
+                                    <input type="password" 
+                                           name="password1" 
+                                           id="password1" 
+                                           class="form-control border-start-0 border-end-0 ps-0" 
+                                           placeholder="Tu contraseña"
+                                           style="border-color: #dee2e6;"
+                                           required>
+                                    <button type="button" 
+                                            class="btn border-start-0" 
+                                            id="togglePassword1"
+                                            style="background: transparent; border-color: #dee2e6; border-radius: 0 10px 10px 0;">
+                                        <i class="bi bi-eye text-muted" id="toggleIcon1"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="password2" class="form-label fw-semibold" style="color: #5A3E2B;">
+                                    <i class="bi bi-lock-fill me-2"></i>Confirmar
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-end-0" style="background: transparent; border-color: #dee2e6; border-radius: 10px 0 0 10px;">
+                                        <i class="bi bi-lock-fill text-muted"></i>
+                                    </span>
+                                    <input type="password" 
+                                           name="password2" 
+                                           id="password2" 
+                                           class="form-control border-start-0 border-end-0 ps-0" 
+                                           placeholder="Repite tu contraseña"
+                                           style="border-color: #dee2e6;"
+                                           required>
+                                    <button type="button" 
+                                            class="btn border-start-0" 
+                                            id="togglePassword2"
+                                            style="background: transparent; border-color: #dee2e6; border-radius: 0 10px 10px 0;">
+                                        <i class="bi bi-eye text-muted" id="toggleIcon2"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Info adicional -->
+                        <div class="alert alert-info" style="border-radius: 10px; border: none; background-color: #d1ecf1;">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <small>Tu contraseña debe tener al menos 8 caracteres y no puede ser muy común.</small>
+                        </div>
+
+                        <!-- Botón de registro -->
+                        <div class="d-grid mb-3">
+                            <button type="submit" 
+                                    class="btn btn-lg fw-semibold" 
+                                    style="background: linear-gradient(135deg, #5A3E2B 0%, #8B4513 100%); 
+                                           border: none; 
+                                           border-radius: 12px; 
+                                           color: white; 
+                                           padding: 12px;
+                                           transition: all 0.3s ease;">
+                                <i class="bi bi-person-plus me-2"></i>
+                                Crear Mi Cuenta
+                            </button>
+                        </div>
+
+                        <!-- Separador -->
+                        <div class="text-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <hr class="flex-grow-1">
+                                <span class="px-3 text-muted small">o</span>
+                                <hr class="flex-grow-1">
+                            </div>
+                        </div>
+
+                        <!-- Link a login -->
+                        <div class="text-center">
+                            <p class="mb-3" style="color: #5A3E2B;">
+                                ¿Ya tienes una cuenta?
+                            </p>
+                            <a href="{% url 'login-page' %}" 
+                               class="btn btn-outline-dark fw-semibold w-100" 
+                               style="border-radius: 12px; 
+                                      padding: 12px 24px; 
+                                      border-color: #5A3E2B; 
+                                      color: #5A3E2B;
+                                      transition: all 0.3s ease;
+                                      border-width: 2px;">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>
+                                Iniciar Sesión
+                            </a>
+                        </div>
+                    </form>
                 </div>
-            {% endif %}
+            </div>
 
-            <div style="margin-top: 30px;">
-                <button type="submit" class="btn btn-dark" style="border-radius: 12px; padding: 8px 30px; border: 1px solid black;">Registrarse</button>
-
-                <p style="color: #5A3E2B;" class="footer-text">
-                    ¿Ya tienes cuenta? <a href="{%url 'login-page'%}">Inicia sesión aquí</a>
+            <!-- Información adicional -->
+            <div class="text-center mt-4">
+                <p class="text-muted small mb-0">
+                    Al crear una cuenta aceptas nuestros 
+                    <a href="#" class="text-decoration-none" style="color: #5A3E2B;">Términos y Condiciones</a>
+                    y 
+                    <a href="#" class="text-decoration-none" style="color: #5A3E2B;">Política de Privacidad</a>
                 </p>
             </div>
-        </form>
+        </div>
     </div>
 </div>
+
+<style>
+/* Efectos hover para botones */
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* Hover específico para botón outline */
+.btn-outline-dark:hover {
+    background-color: #5A3E2B !important;
+    border-color: #5A3E2B !important;
+    color: white !important;
+}
+
+/* Estilo para input focus */
+.form-control:focus {
+    border-color: #5A3E2B;
+    box-shadow: 0 0 0 0.25rem rgba(90, 62, 43, 0.25);
+}
+
+/* Estilo para input group focus */
+.input-group:focus-within .input-group-text {
+    border-color: #5A3E2B;
+}
+
+.input-group:focus-within .form-control {
+    border-color: #5A3E2B;
+}
+
+/* Validación visual */
+.form-control:valid {
+    border-color: #198754;
+}
+
+.form-control:invalid:not(:placeholder-shown) {
+    border-color: #dc3545;
+}
+
+/* Responsividad adicional */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 2rem !important;
+    }
+    
+    .row.mb-3 .col-md-6:first-child {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Función para mostrar/ocultar contraseña 1
+    const togglePassword1 = document.getElementById('togglePassword1');
+    const passwordInput1 = document.getElementById('password1');
+    const toggleIcon1 = document.getElementById('toggleIcon1');
+
+    togglePassword1.addEventListener('click', function() {
+        if (passwordInput1.type === 'password') {
+            passwordInput1.type = 'text';
+            toggleIcon1.className = 'bi bi-eye-slash text-muted';
+        } else {
+            passwordInput1.type = 'password';
+            toggleIcon1.className = 'bi bi-eye text-muted';
+        }
+    });
+
+    // Función para mostrar/ocultar contraseña 2
+    const togglePassword2 = document.getElementById('togglePassword2');
+    const passwordInput2 = document.getElementById('password2');
+    const toggleIcon2 = document.getElementById('toggleIcon2');
+
+    togglePassword2.addEventListener('click', function() {
+        if (passwordInput2.type === 'password') {
+            passwordInput2.type = 'text';
+            toggleIcon2.className = 'bi bi-eye-slash text-muted';
+        } else {
+            passwordInput2.type = 'password';
+            toggleIcon2.className = 'bi bi-eye text-muted';
+        }
+    });
+
+    // Validación de contraseñas en tiempo real
+    passwordInput2.addEventListener('input', function() {
+        if (passwordInput1.value !== '' && passwordInput2.value !== '') {
+            if (passwordInput1.value === passwordInput2.value) {
+                passwordInput2.style.borderColor = '#198754';
+                passwordInput1.style.borderColor = '#198754';
+            } else {
+                passwordInput2.style.borderColor = '#dc3545';
+                passwordInput1.style.borderColor = '#dc3545';
+            }
+        }
+    });
+
+    // Convertir username a lowercase
+    const usernameInput = document.getElementById('username');
+    usernameInput.addEventListener('input', function() {
+        this.value = this.value.toLowerCase().trim();
+    });
+
+    // Validación y formateo de RUT
+    const rutInput = document.getElementById('rut');
+    rutInput.addEventListener('input', function() {
+        let rut = this.value.replace(/[^0-9kK]/g, '');
+        if (rut.length > 1) {
+            rut = rut.slice(0, -1) + '-' + rut.slice(-1);
+        }
+        if (rut.length > 6) {
+            rut = rut.slice(0, -6) + '.' + rut.slice(-6, -4) + '.' + rut.slice(-4);
+        }
+        if (rut.length > 3 && rut.length <= 6) {
+            rut = rut.slice(0, -4) + '.' + rut.slice(-4);
+        }
+        this.value = rut.toUpperCase();
+    });
+
+    // Formateo de teléfono
+    const telefonoInput = document.getElementById('telefono');
+    telefonoInput.addEventListener('input', function() {
+        let telefono = this.value.replace(/[^\d]/g, '');
+        if (telefono.startsWith('56')) {
+            telefono = '+' + telefono;
+        } else if (telefono.startsWith('9') && telefono.length >= 9) {
+            telefono = '+56 ' + telefono;
+        }
+        this.value = telefono;
+    });
+
+    // Efectos visuales en inputs
+    const inputs = document.querySelectorAll('.form-control');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+            this.parentElement.style.transition = 'all 0.2s ease';
+        });
+
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    });
+});
+</script>
 
 {%endblock%}

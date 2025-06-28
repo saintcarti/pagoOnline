@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sidebar de perfil -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-person-circle"></i> Mi Cuenta</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'user-profile-page' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-person"></i> Mi Perfil
+                    </a>
+                    <a href="{% url 'user-order-history' %}" class="list-group-item list-group-item-action active">
+                        <i class="bi bi-clock-history"></i> Historial de Compras
+                    </a>
+                    <a href="{% url 'user-change-password' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-key"></i> Cambiar Contraseña
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="bi bi-receipt"></i> Detalle de Orden #{{ order.order_number }}</h4>
+                    <a href="{% url 'user-order-history' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Volver al Historial
+                    </a>
+                </div>
+                <div class="card-body">
+                    <!-- Información general -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Información de la Orden</h6>
+                            <p class="mb-1"><strong>Número:</strong> {{ order.order_number }}</p>
+                            <p class="mb-1"><strong>Fecha:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                            <p class="mb-1"><strong>Total:</strong> <span class="text-success fw-bold">${{ order.total_amount }}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Estado Actual</h6>
+                            <p class="mb-1">
+                                <strong>Orden:</strong> 
+                                <span class="badge bg-{{ order.get_status_color }} ms-2">
+                                    {{ order.get_order_status_display }}
+                                </span>
+                            </p>
+                            <p class="mb-1">
+                                <strong>Pago:</strong> 
+                                <span class="badge bg-{{ order.get_payment_status_color }} ms-2">
+                                    {{ order.get_payment_status_display }}
+                                </span>
+                            </p>
+                            {% if order.updated_at != order.created_at %}
+                            <p class="mb-1">
+                                <strong>Última actualización:</strong> {{ order.updated_at|date:"d/m/Y H:i" }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Productos -->
+                    <h6 class="fw-bold mb-3">Productos Ordenados</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Precio Unit.</th>
+                                    <th>Cantidad</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order_items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if item.product.image %}
+                                            <img src="{{ item.product.image }}" alt="{{ item.product.name }}" 
+                                                 class="me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-1">{{ item.product.name }}</h6>
+                                                {% if item.product.brand %}
+                                                <small class="text-muted">Marca: {{ item.product.brand.name }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle">${{ item.price }}</td>
+                                    <td class="align-middle text-center">{{ item.quantity }}</td>
+                                    <td class="align-middle"><strong>${{ item.total_price }}</strong></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-info">
+                                    <th colspan="3" class="text-end">Total de la Orden:</th>
+                                    <th>${{ order.total_amount }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Información de envío -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h6 class="fw-bold mb-3">Información de Envío</h6>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <p class="mb-1"><strong>Dirección:</strong> {{ order.shipping_address }}</p>
+                                    <p class="mb-1"><strong>Ciudad:</strong> {{ order.shipping_city }}</p>
+                                    <p class="mb-0"><strong>Teléfono:</strong> {{ order.shipping_phone }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estado de seguimiento -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h6 class="fw-bold mb-3">Estado de Seguimiento</h6>
+                            <div class="progress mb-2" style="height: 25px;">
+                                {% if order.order_status == 'pending' %}
+                                <div class="progress-bar bg-warning" style="width: 25%;">Pendiente</div>
+                                {% elif order.order_status == 'processing' %}
+                                <div class="progress-bar bg-info" style="width: 50%;">En Proceso</div>
+                                {% elif order.order_status == 'shipped' %}
+                                <div class="progress-bar bg-primary" style="width: 75%;">Enviado</div>
+                                {% elif order.order_status == 'delivered' %}
+                                <div class="progress-bar bg-success" style="width: 100%;">Entregado</div>
+                                {% elif order.order_status == 'cancelled' %}
+                                <div class="progress-bar bg-danger" style="width: 100%;">Cancelado</div>
+                                {% endif %}
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>Pendiente</span>
+                                <span>En Proceso</span>
+                                <span>Enviado</span>
+                                <span>Entregado</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información adicional -->
+                    {% if order.paypal_transaction_id %}
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h6 class="fw-bold mb-3">Información de Pago</h6>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <p class="mb-0">
+                                        <strong>ID de Transacción PayPal:</strong> 
+                                        <code>{{ order.paypal_transaction_id }}</code>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,126 +1,420 @@
-{% extends 'base.html' %}
+{% extends 'dashboard-panel/dashboard.html' %}
 {% load static %}
 
 {% block content %}
-<div style="max-width: 500px; background: #F2E8D5; 
-padding: 30px; border-radius: 15px; 
-border: solid 0.5px #D8C3A5;
-box-shadow: 0 4px 8px rgba(216, 195, 165, 0.5);
-" class="container">
-    <h2 style="color: #5A3E2B; margin-bottom: 20px; text-align: center;">Editar Producto</h2>
-    
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        
-        <!-- Mostrar imagen actual si existe -->
-        {% if form.instance.imagen %}
-        <div class="mb-3 text-center">
-            <img src="{{ form.instance.imagen.url }}" alt="Imagen actual" 
-                 style="max-height: 150px; border-radius: 8px; margin-bottom: 15px;">
-            <p class="small text-muted">Imagen actual</p>
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-edit me-2"></i>
+            Editar Producto
+        </h1>
+        <div>
+            <a href="{% url 'list-products' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Volver al Listado
+            </a>
         </div>
-        {% endif %}
+    </div>
 
-        <div class="mb-3">
-            <label style="color: #5A3E2B;" for="nombre" class="form-label">Nombre del Producto</label>
-            <input type="text" class="form-control" id="nombre" name="nombre" 
-                   value="{{ form.nombre.value|default_if_none:'' }}" 
-                   placeholder="Ingresa el nombre del producto">
-            {% if form.nombre.errors %}
-                <div class="text-danger">{{ form.nombre.errors }}</div>
-            {% endif %}
-        </div>
+    <style>
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+        }
 
-        <div class="mb-3">
-            <label style="color: #5A3E2B;" for="descripcion" class="form-label">Descripción</label>
-            <textarea class="form-control" id="descripcion" name="descripcion" 
-                      rows="3" placeholder="Escribe una descripción...">{{ form.descripcion.value|default_if_none:'' }}</textarea>
-            {% if form.descripcion.errors %}
-                <div class="text-danger">{{ form.descripcion.errors }}</div>
-            {% endif %}
-        </div>
+        .sidebar {
+            position: fixed;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
 
-        <div class="mb-3">
-            <label style="color: #5A3E2B;" for="precio" class="form-label">Precio</label>
-            <input type="number" class="form-control" id="precio" name="precio" 
-                   value="{{ form.precio.value|default_if_none:'' }}" step="0.01" 
-                   placeholder="Ej: 9990.00">
-            {% if form.precio.errors %}
-                <div class="text-danger">{{ form.precio.errors }}</div>
-            {% endif %}
-        </div>
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
 
-        <div class="mb-3">
-            <label style="color: #5A3E2B;" for="categoria" class="form-label">Categoría</label>
-            <select class="form-select" id="categoria" name="categoria">
-                <option disabled value="">Selecciona una categoría</option>
-                {% for value, label in form.categoria.field.choices %}
-                    <option value="{{ value }}" {% if form.categoria.value == value %}selected{% endif %}>
-                        {{ label }}
-                    </option>
-                {% endfor %}
-            </select>
-            {% if form.categoria.errors %}
-                <div class="text-danger">{{ form.categoria.errors }}</div>
-            {% endif %}
-        </div>
+            .sidebar {
+                width: 100%;
+                position: relative;
+            }
+        }
 
-        <div class="mb-3">
-            <label style="color: #5A3E2B;" for="marca" class="form-label">Marca</label>
-            <select class="form-select" id="marca" name="marca">
-                <option disabled value="">Selecciona una marca</option>
-                {% for value, label in form.marca.field.choices %}
-                    <option value="{{ value }}" {% if form.marca.value == value %}selected{% endif %}>
-                        {{ label }}
-                    </option>
-                {% endfor %}
-            </select>
-            {% if form.marca.errors %}
-                <div class="text-danger">{{ form.marca.errors }}</div>
-            {% endif %}
-        </div>
+        .form-card {
+            transition: transform 0.2s;
+            border: none;
+            border-radius: 15px;
+        }
 
-        <div class="mb-3">
-            <label style="color: #5A3E2B;" for="stock" class="form-label">Stock</label>
-            <input type="number" class="form-control" id="stock" name="stock" 
-                   value="{{ form.stock.value|default_if_none:'' }}" 
-                   placeholder="Cantidad disponible">
-            {% if form.stock.errors %}
-                <div class="text-danger">{{ form.stock.errors }}</div>
-            {% endif %}
-        </div>
+        .form-card:hover {
+            transform: translateY(-2px);
+        }
 
-        <div class="mb-3">
-            <label style="color: #5A3E2B;" for="imagen" class="form-label">Nueva Imagen (opcional)</label>
-            <input class="form-control" type="file" id="imagen" name="imagen">
-            {% if form.imagen.errors %}
-                <div class="text-danger">{{ form.imagen.errors }}</div>
-            {% endif %}
-            {% if form.instance.imagen %}
-                <div class="form-check mt-2">
-                    <input class="form-check-input" type="checkbox" id="imagen-clear" name="imagen-clear">
-                    <label class="form-check-label" for="imagen-clear" style="color: #5A3E2B;">
-                        Eliminar imagen actual
-                    </label>
+        .form-control:focus {
+            border-color: #5A3E2B;
+            box-shadow: 0 0 0 0.25rem rgba(90, 62, 43, 0.25);
+        }
+
+        .form-select:focus {
+            border-color: #5A3E2B;
+            box-shadow: 0 0 0 0.25rem rgba(90, 62, 43, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #5A3E2B 0%, #8B4513 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #5A3E2B;
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:hover, .form-select:hover {
+            border-color: #5A3E2B;
+        }
+
+        .card-header-custom {
+            background: linear-gradient(135deg, #5A3E2B 0%, #8B4513 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+        }
+
+        .field-icon {
+            color: #5A3E2B;
+            margin-right: 8px;
+        }
+
+        .alert-custom {
+            border-radius: 10px;
+            border: none;
+        }
+
+        .product-image {
+            max-height: 200px;
+            width: auto;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .image-preview {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .image-preview:hover {
+            border-color: #5A3E2B;
+            background: rgba(90, 62, 43, 0.05);
+        }
+    </style>
+
+    <div class="row justify-content-center">
+        <div class="col-xl-10 col-lg-12">
+            <div class="card shadow-lg form-card">
+                <div class="card-header-custom">
+                    <h4 class="mb-0">
+                        <i class="fas fa-box-open me-2"></i>
+                        Editar Producto: {{ form.instance.name|default:"Sin nombre" }}
+                    </h4>
+                    <p class="mb-0 opacity-75">Modifica la información del producto</p>
                 </div>
-            {% endif %}
-        </div>
+                
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-custom alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
 
-        <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="activo" name="activo" 
-                   {% if form.activo.value %}checked{% endif %}>
-            <label style="color: #5A3E2B;" class="form-check-label" for="activo">
-                Producto activo
-            </label>
-            {% if form.activo.errors %}
-                <div class="text-danger">{{ form.activo.errors }}</div>
-            {% endif %}
-        </div>
+                    <form method="POST" enctype="multipart/form-data" id="updateProductForm">
+                        {% csrf_token %}
+                        
+                        <!-- Imagen Actual -->
+                        {% if form.instance.image %}
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-muted mb-3">
+                                    <i class="fas fa-image field-icon"></i>
+                                    Imagen Actual
+                                </h5>
+                                <div class="text-center image-preview">
+                                    <img src="{{ form.instance.image }}" alt="Imagen actual del producto" 
+                                         class="product-image mb-3">
+                                    <p class="text-muted mb-0">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Puedes cambiar la URL de la imagen en el campo de abajo
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
 
-        <div class="d-flex justify-content-between">
-            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-            <a href="{% url 'list-products' %}" class="btn btn-secondary">Cancelar</a>
+                        <!-- Información Básica -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-muted mb-3">
+                                    <i class="fas fa-info-circle field-icon"></i>
+                                    Información Básica
+                                </h5>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Nombre del Producto -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_name" class="form-label">
+                                    <i class="fas fa-tag field-icon"></i>Nombre del Producto
+                                </label>
+                                <input type="text" class="form-control" id="id_name" name="name" 
+                                       value="{{ form.name.value|default_if_none:'' }}" 
+                                       placeholder="Ingresa el nombre del producto" required>
+                                {% if form.name.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.name.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Precio -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_price" class="form-label">
+                                    <i class="fas fa-dollar-sign field-icon"></i>Precio
+                                </label>
+                                <input type="number" class="form-control" id="id_price" name="price" 
+                                       value="{{ form.price.value|default_if_none:'' }}" 
+                                       placeholder="Ej: 9990" required>
+                                {% if form.price.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.price.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Descripción -->
+                            <div class="col-12 mb-3">
+                                <label for="id_description" class="form-label">
+                                    <i class="fas fa-align-left field-icon"></i>Descripción
+                                </label>
+                                <textarea class="form-control" id="id_description" name="description" 
+                                          rows="4" placeholder="Escribe una descripción detallada del producto...">{{ form.description.value|default_if_none:'' }}</textarea>
+                                {% if form.description.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.description.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Clasificación -->
+                        <div class="row mb-4 mt-4">
+                            <div class="col-12">
+                                <h5 class="text-muted mb-3">
+                                    <i class="fas fa-layer-group field-icon"></i>
+                                    Clasificación
+                                </h5>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Marca -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_brand" class="form-label">
+                                    <i class="fas fa-copyright field-icon"></i>Marca
+                                </label>
+                                <select class="form-select" id="id_brand" name="brand">
+                                    <option value="">Selecciona una marca</option>
+                                    {% for brand in form.brand.field.queryset %}
+                                        <option value="{{ brand.id }}" {% if form.brand.value == brand.id %}selected{% endif %}>
+                                            {{ brand.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.brand.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.brand.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Categorías -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_categories" class="form-label">
+                                    <i class="fas fa-list field-icon"></i>Categorías
+                                </label>
+                                <select class="form-select" id="id_categories" name="categories" multiple>
+                                    {% for category in form.categories.field.queryset %}
+                                        <option value="{{ category.id }}" {% if category.id in form.categories.value %}selected{% endif %}>
+                                            {{ category.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Mantén presionado Ctrl para seleccionar múltiples categorías
+                                </div>
+                                {% if form.categories.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.categories.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Imagen -->
+                        <div class="row mb-4 mt-4">
+                            <div class="col-12">
+                                <h5 class="text-muted mb-3">
+                                    <i class="fas fa-camera field-icon"></i>
+                                    Imagen del Producto
+                                </h5>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- URL de Imagen -->
+                            <div class="col-12 mb-3">
+                                <label for="id_image" class="form-label">
+                                    <i class="fas fa-link field-icon"></i>URL de la Imagen
+                                </label>
+                                <input type="url" class="form-control" id="id_image" name="image" 
+                                       value="{{ form.image.value|default_if_none:'' }}" 
+                                       placeholder="https://ejemplo.com/imagen.jpg" required>
+                                {% if form.image.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.image.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Ingresa la URL completa de la imagen (debe comenzar con http:// o https://)
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4 pt-3 border-top">
+                            <a href="{% url 'list-products' %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-    </form>
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar clases de Bootstrap a los campos del formulario
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="file"], textarea, select');
+    inputs.forEach(input => {
+        if (!input.classList.contains('form-control') && !input.classList.contains('form-select')) {
+            if (input.tagName.toLowerCase() === 'select') {
+                input.classList.add('form-select');
+            } else if (input.type === 'file') {
+                input.classList.add('form-control');
+            } else {
+                input.classList.add('form-control');
+            }
+        }
+    });
+
+    // Efectos de focus en los campos
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+            this.parentElement.style.transition = 'all 0.2s ease';
+        });
+
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    });
+
+    // Preview de imagen URL
+    const imageInput = document.getElementById('id_image');
+    if (imageInput) {
+        imageInput.addEventListener('input', function(e) {
+            const url = e.target.value;
+            if (url) {
+                // Crear preview
+                let preview = document.getElementById('image-preview');
+                if (!preview) {
+                    preview = document.createElement('div');
+                    preview.id = 'image-preview';
+                    preview.className = 'mt-3 text-center';
+                    imageInput.parentElement.appendChild(preview);
+                }
+                preview.innerHTML = `
+                    <img src="${url}" alt="Preview" 
+                         style="max-height: 150px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <p class="text-danger mt-2 mb-0" style="display: none;">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Error al cargar la imagen. Verifica la URL.
+                    </p>
+                    <p class="text-muted mt-2 mb-0">
+                        <i class="fas fa-eye me-1"></i>Vista previa de la imagen
+                    </p>
+                `;
+            }
+        });
+    }
+
+    // Confirmar eliminación de imagen
+    const imageClear = document.getElementById('imagen-clear');
+    if (imageClear) {
+        imageClear.addEventListener('change', function() {
+            if (this.checked) {
+                const confirm = window.confirm('¿Estás seguro de que quieres eliminar la imagen actual del producto?');
+                if (!confirm) {
+                    this.checked = false;
+                }
+            }
+        });
+    }
+
+    // Validación del formulario
+    const form = document.getElementById('updateProductForm');
+    form.addEventListener('submit', function(e) {
+        const price = document.getElementById('id_price').value;
+        
+        if (parseFloat(price) <= 0) {
+            e.preventDefault();
+            alert('El precio debe ser mayor a 0');
+            return;
+        }
+    });
+});
+</script>
 {% endblock %}  

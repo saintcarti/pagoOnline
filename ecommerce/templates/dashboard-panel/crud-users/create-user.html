@@ -2,50 +2,394 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4">Registro de Personal</h2>
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-user-plus me-2"></i>
+            Crear Nuevo Usuario
+        </h1>
+        <a href="{% url 'list-user' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Volver al Listado
+        </a>
+    </div>
+
     <style>
-  .main-content {
-    margin-left: 280px; /* Igual al ancho del sidebar */
-    padding: 20px;
-  }
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+        }
 
-  .sidebar {
-    position: fixed;
-    height: 100%;
-    top: 0;
-    left: 0;
-  }
+        .sidebar {
+            position: fixed;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
 
-  @media (max-width: 768px) {
-    .main-content {
-      margin-left: 0;
-    }
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
 
-    .sidebar {
-      width: 100%;
-      position: relative;
-    }
-  }
-</style>
-    <div class="card">
-        <div class="card-body">
-            <form method="POST">
-                {% csrf_token %}
-                <div class="row">
-                    {% for field in form %}
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %}
-                        <div class="text-danger">{{ field.errors }}</div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
+            .sidebar {
+                width: 100%;
+                position: relative;
+            }
+        }
+
+        .form-card {
+            transition: transform 0.2s;
+            border: none;
+            border-radius: 15px;
+        }
+
+        .form-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .form-control:focus {
+            border-color: #5A3E2B;
+            box-shadow: 0 0 0 0.25rem rgba(90, 62, 43, 0.25);
+        }
+
+        .form-select:focus {
+            border-color: #5A3E2B;
+            box-shadow: 0 0 0 0.25rem rgba(90, 62, 43, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #5A3E2B 0%, #8B4513 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #5A3E2B;
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:hover, .form-select:hover {
+            border-color: #5A3E2B;
+        }
+
+        .card-header-custom {
+            background: linear-gradient(135deg, #5A3E2B 0%, #8B4513 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+        }
+
+        .field-icon {
+            color: #5A3E2B;
+            margin-right: 8px;
+        }
+
+        .alert-custom {
+            border-radius: 10px;
+            border: none;
+        }
+    </style>
+
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <div class="card shadow-lg form-card">
+                <div class="card-header-custom">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-cog me-2"></i>
+                        Registro de Nuevo Usuario del Sistema
+                    </h4>
+                    <p class="mb-0 opacity-75">Complete la información para crear un nuevo usuario</p>
                 </div>
-                <button type="submit" class="btn btn-primary">Registrar</button>
-            </form>
-        </div>  
+                
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-custom alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" id="createUserForm">
+                        {% csrf_token %}
+                        
+                        <!-- Información Personal -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-muted mb-3">
+                                    <i class="fas fa-user field-icon"></i>
+                                    Información Personal
+                                </h5>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Username -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_username" class="form-label">
+                                    <i class="fas fa-at field-icon"></i>Nombre de Usuario
+                                </label>
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.username.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Email -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_email" class="form-label">
+                                    <i class="fas fa-envelope field-icon"></i>Correo Electrónico
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.email.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- First Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_first_name" class="form-label">
+                                    <i class="fas fa-user field-icon"></i>Nombre
+                                </label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.first_name.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Last Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_last_name" class="form-label">
+                                    <i class="fas fa-user field-icon"></i>Apellido
+                                </label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.last_name.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Información de Contacto -->
+                        <div class="row mb-4 mt-4">
+                            <div class="col-12">
+                                <h5 class="text-muted mb-3">
+                                    <i class="fas fa-address-book field-icon"></i>
+                                    Información de Contacto
+                                </h5>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- RUT -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_rut" class="form-label">
+                                    <i class="fas fa-id-card field-icon"></i>RUT
+                                </label>
+                                {{ form.rut }}
+                                {% if form.rut.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.rut.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Teléfono -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_telefono" class="form-label">
+                                    <i class="fas fa-phone field-icon"></i>Teléfono
+                                </label>
+                                {{ form.telefono }}
+                                {% if form.telefono.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.telefono.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Dirección -->
+                            <div class="col-12 mb-3">
+                                <label for="id_direccion" class="form-label">
+                                    <i class="fas fa-map-marker-alt field-icon"></i>Dirección
+                                </label>
+                                {{ form.direccion }}
+                                {% if form.direccion.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.direccion.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Información del Sistema -->
+                        <div class="row mb-4 mt-4">
+                            <div class="col-12">
+                                <h5 class="text-muted mb-3">
+                                    <i class="fas fa-cogs field-icon"></i>
+                                    Configuración del Sistema
+                                </h5>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Rol -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_rol" class="form-label">
+                                    <i class="fas fa-user-tag field-icon"></i>Rol del Usuario
+                                </label>
+                                {{ form.rol }}
+                                {% if form.rol.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.rol.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Is Active -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_is_active" class="form-label">
+                                    <i class="fas fa-toggle-on field-icon"></i>Estado
+                                </label>
+                                <div class="form-check form-switch mt-2">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="id_is_active">
+                                        Usuario activo
+                                    </label>
+                                </div>
+                                {% if form.is_active.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.is_active.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Contraseñas -->
+                        <div class="row mb-4 mt-4">
+                            <div class="col-12">
+                                <h5 class="text-muted mb-3">
+                                    <i class="fas fa-lock field-icon"></i>
+                                    Credenciales de Acceso
+                                </h5>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Password1 -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_password1" class="form-label">
+                                    <i class="fas fa-key field-icon"></i>Contraseña
+                                </label>
+                                {{ form.password1 }}
+                                {% if form.password1.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.password1.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Password2 -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_password2" class="form-label">
+                                    <i class="fas fa-lock field-icon"></i>Confirmar Contraseña
+                                </label>
+                                {{ form.password2 }}
+                                {% if form.password2.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.password2.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4 pt-3 border-top">
+                            <a href="{% url 'list-user' %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-1"></i>Crear Usuario
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar clases de Bootstrap a los campos del formulario
+    const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], textarea, select');
+    inputs.forEach(input => {
+        if (!input.classList.contains('form-control') && !input.classList.contains('form-select')) {
+            if (input.tagName.toLowerCase() === 'select') {
+                input.classList.add('form-select');
+            } else {
+                input.classList.add('form-control');
+            }
+        }
+    });
+
+    // Efectos de focus en los campos
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+            this.parentElement.style.transition = 'all 0.2s ease';
+        });
+
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    });
+
+    // Validación en tiempo real para contraseñas
+    const password1 = document.getElementById('id_password1');
+    const password2 = document.getElementById('id_password2');
+
+    if (password1 && password2) {
+        password2.addEventListener('input', function() {
+            if (password1.value !== '' && password2.value !== '') {
+                if (password1.value === password2.value) {
+                    password2.style.borderColor = '#198754';
+                    password1.style.borderColor = '#198754';
+                } else {
+                    password2.style.borderColor = '#dc3545';
+                    password1.style.borderColor = '#dc3545';
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

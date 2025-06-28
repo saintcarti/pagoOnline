@@ -1,0 +1,97 @@
+{% extends 'dashboard-panel/dashboard.html' %}
+
+{% block title %}Confirmar Eliminación - Mensaje de Contacto{% endblock %}
+
+{% block content %}
+<div class="container mt-4"><style>
+  .main-content {
+    margin-left: 280px; /* Igual al ancho del sidebar */
+    padding: 20px;
+  }
+
+  .sidebar {
+    position: fixed;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+    }
+
+    .sidebar {
+      width: 100%;
+      position: relative;
+    }
+  }
+</style>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-trash-alt me-2"></i>
+                        Confirmar Eliminación
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>¡Atención!</strong> Esta acción no se puede deshacer.
+                    </div>
+                    
+                    <h5>¿Estás seguro de que deseas eliminar este mensaje?</h5>
+                    
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <h6><strong>Detalles del mensaje:</strong></h6>
+                        <p><strong>De:</strong> {{ message.name }} ({{ message.email }})</p>
+                        <p><strong>Motivo:</strong> {{ message.get_reason_display }}</p>
+                        <p><strong>Fecha:</strong> {{ message.created_at|date:"d/m/Y H:i" }}</p>
+                        <p><strong>Estado:</strong> 
+                            <span class="badge bg-{{ message.get_status_color }}">
+                                {{ message.get_status_display }}
+                            </span>
+                        </p>
+                        <p><strong>Mensaje:</strong></p>
+                        <div class="bg-white p-2 rounded border">
+                            {{ message.message|truncatewords:30 }}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 d-flex justify-content-between">
+                        <a href="{% url 'view-contact-message' message.id %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Cancelar
+                        </a>
+                        
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt me-2"></i>
+                                Sí, Eliminar Mensaje
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+</style>
+{% endblock %}

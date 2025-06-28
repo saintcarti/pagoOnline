@@ -1,0 +1,207 @@
+{% extends 'dashboard-panel/dashboard.html' %}
+
+{% block title %}Configuraciones - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <style>
+  .main-content {
+    margin-left: 280px; /* Igual al ancho del sidebar */
+    padding: 20px;
+  }
+
+  .sidebar {
+    position: fixed;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+    }
+
+    .sidebar {
+      width: 100%;
+      position: relative;
+    }
+  }
+</style>
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Configuraciones del Sistema</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard-panel-page' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Configuraciones</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>
+                        Configuraciones Generales
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Gestión de Usuarios</h6>
+                                <p class="mb-1 text-muted">Administrar usuarios del sistema</p>
+                            </div>
+                            <a href="{% url 'list-user' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-users"></i>
+                            </a>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Gestión de Productos</h6>
+                                <p class="mb-1 text-muted">Administrar productos de la tienda</p>
+                            </div>
+                            <a href="{% url 'list-products' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-boxes"></i>
+                            </a>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Mensajes de Contacto</h6>
+                                <p class="mb-1 text-muted">Gestionar mensajes de los clientes</p>
+                            </div>
+                            <a href="{% url 'list-contact-messages' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Estadísticas del Sistema
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h4 class="text-primary">{{ total_products|default:0 }}</h4>
+                                <small class="text-muted">Productos</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border-end">
+                                <h4 class="text-success">{{ total_users|default:0 }}</h4>
+                                <small class="text-muted">Usuarios</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-info">{{ total_messages|default:0 }}</h4>
+                            <small class="text-muted">Mensajes</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Información del Sistema
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">Versión del Sistema:</dt>
+                        <dd class="col-sm-7">Ferremas v1.0</dd>
+                        
+                        <dt class="col-sm-5">Usuario Actual:</dt>
+                        <dd class="col-sm-7">{{ user.username }} ({{ user.get_rol_display }})</dd>
+                        
+                        <dt class="col-sm-5">Última Conexión:</dt>
+                        <dd class="col-sm-7">{{ user.last_login|date:"d/m/Y H:i" }}</dd>
+                        
+                        <dt class="col-sm-5">Fecha de Registro:</dt>
+                        <dd class="col-sm-7">{{ user.date_joined|date:"d/m/Y" }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-link me-2"></i>
+                        Enlaces Rápidos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{% url 'index-page' %}" class="btn btn-outline-success w-100 mb-2">
+                                <i class="fas fa-home me-2"></i>
+                                Ver Sitio Web
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'admin-profile-page' %}" class="btn btn-outline-primary w-100 mb-2">
+                                <i class="fas fa-user me-2"></i>
+                                Mi Perfil
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'create-product' %}" class="btn btn-outline-info w-100 mb-2">
+                                <i class="fas fa-plus me-2"></i>
+                                Crear Producto
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'create-user' %}" class="btn btn-outline-warning w-100 mb-2">
+                                <i class="fas fa-user-plus me-2"></i>
+                                Crear Usuario
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.list-group-item {
+    transition: background-color 0.2s ease-in-out;
+}
+
+.list-group-item:hover {
+    background-color: var(--bs-light);
+}
+
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+</style>
+{% endblock %}

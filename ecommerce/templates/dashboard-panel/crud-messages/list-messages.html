@@ -1,0 +1,235 @@
+{% extends 'dashboard-panel/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <style>
+  .main-content {
+    margin-left: 280px; /* Igual al ancho del sidebar */
+    padding: 20px;
+  }
+
+  .sidebar {
+    position: fixed;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+
+  @media (max-width: 768px) {
+    .main-content {
+      margin-left: 0;
+    }
+
+    .sidebar {
+      width: 100%;
+      position: relative;
+    }
+  }
+</style>
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="bi bi-chat-dots me-2"></i>Mensajes de Contacto
+                        </h4>
+                        <span class="badge bg-light text-primary fs-6">
+                            {{ page_obj.paginator.count }} mensaje{{ page_obj.paginator.count|pluralize }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    <!-- Filtros -->
+                    <div class="p-4 bg-light border-bottom">
+                        <form method="GET" class="row g-3">
+                            <div class="col-md-3">
+                                <label for="search" class="form-label">Buscar</label>
+                                <input type="text" class="form-control" id="search" name="search" 
+                                       value="{{ search_query }}" placeholder="Nombre, email o mensaje...">
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label for="status" class="form-label">Estado</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="">Todos los estados</option>
+                                    {% for value, label in status_choices %}
+                                        <option value="{{ value }}" 
+                                                {% if current_status == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label for="reason" class="form-label">Motivo</label>
+                                <select class="form-select" id="reason" name="reason">
+                                    <option value="">Todos los motivos</option>
+                                    {% for value, label in reason_choices %}
+                                        <option value="{{ value }}" 
+                                                {% if current_reason == value %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="bi bi-search me-1"></i>Filtrar
+                                </button>
+                                <a href="{% url 'list-contact-messages' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Lista de mensajes -->
+                    {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Motivo</th>
+                                    <th>Estado</th>
+                                    <th>Fecha</th>
+                                    <th>Atendido por</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for message in page_obj %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary rounded-circle p-2 me-2">
+                                                <i class="bi bi-person text-white"></i>
+                                            </div>
+                                            <div>
+                                                <strong>{{ message.name }}</strong><br>
+                                                <small class="text-muted">{{ message.phone }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="mailto:{{ message.email }}" class="text-decoration-none">
+                                            {{ message.email }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ message.get_reason_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ message.get_status_color }}">
+                                            {{ message.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>
+                                            {{ message.created_at|date:"d/m/Y H:i" }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        {% if message.attended_by %}
+                                            <small class="text-success">
+                                                <i class="bi bi-person-check me-1"></i>
+                                                {{ message.attended_by.username }}
+                                            </small>
+                                        {% else %}
+                                            <small class="text-muted">
+                                                <i class="bi bi-person-dash me-1"></i>
+                                                Sin asignar
+                                            </small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'view-contact-message' message.id %}" 
+                                               class="btn btn-outline-primary" title="Ver mensaje">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{% url 'delete-contact-message' message.id %}" 
+                                               class="btn btn-outline-danger" title="Eliminar">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    {% if page_obj.has_other_pages %}
+                    <nav aria-label="Navegación de mensajes" class="p-4">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_reason %}&reason={{ current_reason }}{% endif %}">
+                                    <i class="bi bi-chevron-left"></i> Anterior
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_reason %}&reason={{ current_reason }}{% endif %}">{{ num }}</a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_reason %}&reason={{ current_reason }}{% endif %}">
+                                    Siguiente <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-chat-dots display-1 text-muted"></i>
+                        <h4 class="mt-3">No hay mensajes</h4>
+                        <p class="text-muted">
+                            {% if current_status or current_reason or search_query %}
+                                No se encontraron mensajes con los filtros aplicados.
+                            {% else %}
+                                Aún no hay mensajes de contacto.
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Información de paginación -->
+{% if page_obj %}
+<div class="text-center mt-3 text-muted">
+    <small>
+        Mostrando mensajes {{ page_obj.start_index }} - {{ page_obj.end_index }} 
+        de {{ page_obj.paginator.count }} total(es)
+    </small>
+</div>
+{% endif %}
+
+{% endblock %}

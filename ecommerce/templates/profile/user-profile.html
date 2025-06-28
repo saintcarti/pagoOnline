@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Perfil - Ferremas{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">
+                    <i class="bi bi-person-circle me-2"></i>
+                    Mi Perfil
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{% url 'index-page' %}">Inicio</a></li>
+                        <li class="breadcrumb-item active">Mi Perfil</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4">
+            <!-- Información del perfil -->
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div class="bg-primary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                             style="width: 120px; height: 120px;">
+                            <i class="bi bi-person-fill text-white" style="font-size: 3rem;"></i>
+                        </div>
+                    </div>
+                    <h4 class="card-title">
+                        {% if user.get_full_name %}
+                            {{ user.get_full_name }}
+                        {% else %}
+                            {{ user.username }}
+                            <small class="text-muted">(sin nombre completo)</small>
+                        {% endif %}
+                    </h4>
+                    <p class="card-text text-muted">{{ user.get_rol_display }}</p>
+                    <p class="card-text">
+                        <i class="bi bi-envelope me-2"></i>{{ user.email }}
+                    </p>
+                    {% if user.telefono %}
+                    <p class="card-text">
+                        <i class="bi bi-telephone me-2"></i>{{ user.telefono }}
+                    </p>
+                    {% endif %}
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="bi bi-calendar me-2"></i>
+                            Registrado: {{ user.date_joined|date:"d/m/Y" }}
+                        </small>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Estadísticas del usuario -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Mi Actividad
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-primary">{{ user_messages_count }}</h4>
+                                <small class="text-muted">Mensajes Enviados</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ user.last_login|timesince }}</h4>
+                            <small class="text-muted">Última Conexión</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enlaces rápidos -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-link-45deg me-2"></i>
+                        Enlaces Rápidos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'products-page' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-shop me-2"></i>
+                            Ver Productos
+                        </a>
+                        <a href="{% url 'contact-page' %}" class="btn btn-outline-info">
+                            <i class="bi bi-envelope me-2"></i>
+                            Contactar Soporte
+                        </a>
+                        <a href="{% url 'view_cart' %}" class="btn btn-outline-success">
+                            <i class="bi bi-cart me-2"></i>
+                            Mi Carrito
+                        </a>
+                        {% if user.is_staff %}
+                        <a href="{% url 'dashboard-panel-page' %}" class="btn btn-outline-warning">
+                            <i class="bi bi-speedometer2 me-2"></i>
+                            Panel Admin
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <!-- Formulario de edición -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        Editar Información Personal
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="first_name" class="form-label">
+                                        <i class="bi bi-person me-2"></i>Nombre
+                                    </label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                                           value="{{ user.first_name }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="last_name" class="form-label">
+                                        <i class="bi bi-person me-2"></i>Apellido
+                                    </label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                                           value="{{ user.last_name }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">
+                                        <i class="bi bi-envelope me-2"></i>Correo Electrónico
+                                    </label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="{{ user.email }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="telefono" class="form-label">
+                                        <i class="bi bi-telephone me-2"></i>Teléfono
+                                    </label>
+                                    <input type="text" class="form-control" id="telefono" name="telefono" 
+                                           value="{{ user.telefono|default:'' }}" placeholder="+56912345678">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="rut" class="form-label">
+                                <i class="bi bi-card-text me-2"></i>RUT
+                            </label>
+                            <input type="text" class="form-control" id="rut" name="rut" 
+                                   value="{{ user.rut|default:'' }}" placeholder="12.345.678-9">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="direccion" class="form-label">
+                                <i class="bi bi-geo-alt me-2"></i>Dirección
+                            </label>
+                            <textarea class="form-control" id="direccion" name="direccion" rows="3" 
+                                      placeholder="Ingrese su dirección completa">{{ user.direccion|default:'' }}</textarea>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Guardar Cambios
+                            </button>
+                            <a href="{% url 'index-page' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Cambiar contraseña -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-shield-lock me-2"></i>
+                        Cambiar Contraseña
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'user-change-password' %}">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="old_password" class="form-label">Contraseña Actual</label>
+                                    <input type="password" class="form-control" id="old_password" name="old_password" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="new_password1" class="form-label">Nueva Contraseña</label>
+                                    <input type="password" class="form-control" id="new_password1" name="new_password1" required>
+                                    <div class="form-text">Mínimo 8 caracteres</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="new_password2" class="form-label">Confirmar Nueva Contraseña</label>
+                                    <input type="password" class="form-control" id="new_password2" name="new_password2" required>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-key me-2"></i>
+                            Cambiar Contraseña
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.btn {
+    border-radius: 10px;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+}
+</style>
+{% endblock %}

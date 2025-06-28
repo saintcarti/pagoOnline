@@ -1,6 +1,6 @@
 # views.py
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
-from .models import Product, TransaccionPaypal, Cart, CartItem
+from .models import Product, TransaccionPaypal, Cart, CartItem, Order, OrderItem
 from datetime import datetime
 from .customButton import CustomPaypalPaymentsForm
 from django.conf import settings
@@ -8,6 +8,10 @@ import uuid
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from decimal import Decimal
+import random
+import string
 
 
 def get_or_create_cart(request):
@@ -34,7 +38,18 @@ def add_to_cart(request, product_id):
         cart_item.quantity += 1
         cart_item.save()
     
-    return redirect('view_cart')
+    # Si es una petición AJAX, devolver JSON
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        cart_count = sum(item.quantity for item in cart.cartitem_set.all())
+        return JsonResponse({
+            'success': True,
+            'cart_count': cart_count,
+            'message': f'{product.name} agregado al carrito'
+        })
+    
+    # Redirigir de vuelta a la página desde donde se añadió el producto
+    next_url = request.GET.get('next', 'view_cart')
+    return redirect(next_url)
 
 def remove_from_cart(request, item_id):
     cart_item = get_object_or_404(CartItem, id=item_id)
@@ -56,10 +71,12 @@ def view_cart(request):
     
     context = {
         'cart_items': cart_items,
-        'total': total
+        'total': total,
+        # cart_count estará disponible automáticamente por el procesador de contexto
     }
     return render(request, 'paypal/cart.html', context)
 
+@login_required(login_url='login-page')
 def checkout(request):
     cart = get_or_create_cart(request)
     cart_items = cart.cartitem_set.all()
@@ -96,11 +113,35 @@ def payment_successful(request):
     cart = get_or_create_cart(request)
     cart_items = cart.cartitem_set.all()
     
-    # Limpiar el carrito después de una compra exitosa
-    cart_items.delete()
-    cart.delete()
+    if cart_items and request.user.is_authenticated:
+        # Crear información de envío básica (se puede expandir con un formulario)
+        shipping_info = {
+            'address': getattr(request.user, 'direccion', 'Dirección no especificada'),
+            'city': 'Ciudad no especificada',
+            'phone': getattr(request.user, 'telefono', 'Teléfono no especificado'),
+        }
+        
+        # Crear la orden
+        order = create_order_from_cart(request.user, cart, shipping_info)
+        
+        if order:
+            # Actualizar estado de pago como completado
+            order.payment_status = 'completed'
+            order.save()
+            
+            context = {
+                'order': order,
+                'success_message': f'¡Compra realizada exitosamente! Número de orden: {order.order_number}'
+            }
+        else:
+            context = {'error_message': 'Error al procesar la orden'}
+    else:
+        # Limpiar el carrito para usuarios no autenticados
+        cart_items.delete()
+        cart.delete()
+        context = {'success_message': '¡Compra realizada exitosamente!'}
     
-    return render(request, 'paypal/payment-success.html', {'cart_items': cart_items})
+    return render(request, 'paypal/payment-success.html', context)
 
 def payment_failed(request):
     return render(request, 'paypal/payment-failed.html')
@@ -148,3 +189,82 @@ def strtotime(i_time: str):
     min = i_time_space[0].split(":")[1]
     seg = i_time_space[0].split(":")[2]
     return datetime(int(year), int(meses.index(month)) + 1, int(day), int(hora), int(min), int(seg))
+
+def get_cart_count(request):
+    """
+    Vista para obtener el contador del carrito vía AJAX
+    """
+    cart = get_or_create_cart(request)
+    cart_count = sum(item.quantity for item in cart.cartitem_set.all())
+    return JsonResponse({'cart_count': cart_count})
+
+def generate_order_number():
+    """Genera un número de orden único"""
+    import random
+    import string
+    from datetime import datetime
+    
+    # Formato: ORD-YYYYMMDD-XXXX (ORD-20250628-A1B2)
+    date_str = datetime.now().strftime('%Y%m%d')
+    random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+    return f"ORD-{date_str}-{random_str}"
+
+def create_order_from_cart(user, cart, shipping_info):
+    """
+    Crea una orden a partir del carrito de compras
+    """
+    cart_items = cart.cartitem_set.all()
+    
+    if not cart_items:
+        return None
+    
+    # Calcular total
+    total_amount = sum(item.total_price() for item in cart_items)
+    
+    # Crear la orden
+    order = Order.objects.create(
+        user=user,
+        order_number=generate_order_number(),
+        total_amount=Decimal(str(total_amount)),
+        shipping_address=shipping_info.get('address', ''),
+        shipping_city=shipping_info.get('city', ''),
+        shipping_phone=shipping_info.get('phone', ''),
+    )
+    
+    # Crear los items de la orden
+    for cart_item in cart_items:
+        OrderItem.objects.create(
+            order=order,
+            product=cart_item.product,
+            quantity=cart_item.quantity,
+            price=Decimal(str(cart_item.product.price))
+        )
+    
+    # Limpiar el carrito
+    cart_items.delete()
+    
+    return order
+
+# Vistas para el historial de órdenes
+
+@login_required
+def user_order_history(request):
+    """Vista para que los usuarios vean su historial de compras"""
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    
+    context = {
+        'orders': orders,
+        'user': request.user
+    }
+    return render(request, 'profile/order-history.html', context)
+
+@login_required
+def order_detail(request, order_id):
+    """Vista para ver detalles de una orden específica"""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    context = {
+        'order': order,
+        'order_items': order.items.all()
+    }
+    return render(request, 'profile/order-detail.html', context)

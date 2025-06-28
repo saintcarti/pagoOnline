@@ -1,0 +1,297 @@
+{% extends 'dashboard-panel/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-receipt me-2"></i>
+            Detalle de Orden: {{ order.order_number }}
+        </h1>
+        <div>
+            <a href="{% url 'list-orders' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Volver al Listado
+            </a>
+        </div>
+    </div>
+
+    <style>
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+        }
+
+        .sidebar {
+            position: fixed;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar {
+                width: 100%;
+                position: relative;
+            }
+        }
+
+        .info-card {
+            transition: transform 0.2s;
+        }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+
+    <div class="row">
+        <!-- Información general de la orden -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4 info-card">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle me-1"></i>Información General
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <strong class="text-muted">Número de Orden:</strong>
+                                <div class="text-dark">{{ order.order_number }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <strong class="text-muted">Cliente:</strong>
+                                <div class="text-dark">{{ order.user.get_full_name|default:order.user.username }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <strong class="text-muted">Email:</strong>
+                                <div class="text-dark">{{ order.user.email }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <strong class="text-muted">Total:</strong>
+                                <div class="text-success fw-bold fs-5">${{ order.total_amount }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <strong class="text-muted">Fecha de Orden:</strong>
+                                <div class="text-dark">{{ order.created_at|date:"d/m/Y H:i" }}</div>
+                            </div>
+                            <div class="mb-3">
+                                <strong class="text-muted">Última Actualización:</strong>
+                                <div class="text-dark">{{ order.updated_at|date:"d/m/Y H:i" }}</div>
+                            </div>
+                            {% if order.paypal_transaction_id %}
+                            <div class="mb-3">
+                                <strong class="text-muted">ID Transacción PayPal:</strong>
+                                <div class="text-dark"><code>{{ order.paypal_transaction_id }}</code></div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productos de la orden -->
+            <div class="card shadow mb-4 info-card">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-box-open me-1"></i>Productos Ordenados
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-borderless">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Precio Unit.</th>
+                                    <th>Cantidad</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order_items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if item.product.image %}
+                                            <img src="{{ item.product.image }}" alt="{{ item.product.name }}" 
+                                                 class="me-3 rounded" style="width: 60px; height: 60px; object-fit: cover;">
+                                            {% else %}
+                                            <div class="me-3 bg-light rounded d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                                <i class="fas fa-image text-muted"></i>
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-bold">{{ item.product.name }}</div>
+                                                {% if item.product.brand %}
+                                                <small class="text-muted">{{ item.product.brand.name }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle">${{ item.price }}</td>
+                                    <td class="align-middle text-center">
+                                        <span class="badge bg-secondary">{{ item.quantity }}</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <strong class="text-success">${{ item.total_price }}</strong>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-info">
+                                    <th colspan="3" class="text-end">Total de la Orden:</th>
+                                    <th class="text-success">${{ order.total_amount }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de envío -->
+            <div class="card shadow info-card">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-truck me-1"></i>Información de Envío
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <strong class="text-muted">Dirección:</strong>
+                                <div class="text-dark">{{ order.shipping_address }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <strong class="text-muted">Ciudad:</strong>
+                                <div class="text-dark">{{ order.shipping_city }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <strong class="text-muted">Teléfono:</strong>
+                                <div class="text-dark">{{ order.shipping_phone }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de gestión -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4 info-card">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-cogs me-1"></i>Gestión de Estado
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="order_status" class="form-label fw-bold">Estado de la Orden</label>
+                            <select class="form-select" id="order_status" name="order_status">
+                                {% for value, label in status_choices %}
+                                    <option value="{{ value }}" {% if order.order_status == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="payment_status" class="form-label fw-bold">Estado del Pago</label>
+                            <select class="form-select" id="payment_status" name="payment_status">
+                                {% for value, label in payment_status_choices %}
+                                    <option value="{{ value }}" {% if order.payment_status == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-save me-1"></i> Actualizar Estado
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Estado actual -->
+            <div class="card shadow info-card">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-flag me-1"></i>Estado Actual
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong class="text-muted">Estado de Orden:</strong>
+                        <div class="mt-1">
+                            <span class="badge bg-{{ order.get_status_color }} fs-6 px-3 py-2">
+                                <i class="fas fa-circle me-1"></i>{{ order.get_order_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong class="text-muted">Estado de Pago:</strong>
+                        <div class="mt-1">
+                            <span class="badge bg-{{ order.get_payment_status_color }} fs-6 px-3 py-2">
+                                <i class="fas fa-credit-card me-1"></i>{{ order.get_payment_status_display }}
+                            </span>
+                        </div>
+                    </div>
+
+                    {% if order.paypal_payment_status %}
+                    <div class="mb-0">
+                        <strong class="text-muted">Estado PayPal:</strong>
+                        <div class="mt-1">
+                            <small class="text-muted bg-light p-2 rounded d-block">
+                                {{ order.paypal_payment_status }}
+                            </small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Resumen de totales -->
+            <div class="card shadow info-card">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-calculator me-1"></i>Resumen
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Productos ({{ order_items.count }}):</span>
+                        <span>${{ order.total_amount }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Envío:</span>
+                        <span class="text-muted">Gratis</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total:</strong>
+                        <strong class="text-success">${{ order.total_amount }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -2,166 +2,367 @@
 {% load static %}
 
 {% block content %}
-<div class="main-content">
-  <div style="max-width: 600px; background: #F2E8D5; 
-              padding: 30px; border-radius: 15px; 
-              border: solid 0.5px #D8C3A5;
-              box-shadow: 0 4px 8px rgba(216, 195, 165, 0.5);
-              margin: 0 auto;">
-    
-    <div class="text-center mb-4">
-      <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
-      <h2 style="color: #5A3E2B; margin-top: 15px;">Confirmar Eliminación</h2>
-    </div>
-    
-    <div class="alert alert-warning border-0 shadow-sm" role="alert">
-      <div class="d-flex">
-        <div class="flex-shrink-0">
-          <i class="fas fa-info-circle text-warning"></i>
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-trash-alt me-2 text-danger"></i>
+            Eliminar Producto
+        </h1>
+        <div>
+            <a href="{% url 'list-products' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Volver al Listado
+            </a>
         </div>
-        <div class="flex-grow-1 ms-3">
-          <strong>Atención:</strong> Esta acción no se puede deshacer.
-        </div>
-      </div>
     </div>
 
-    <div class="card border-0 shadow-sm mb-4">
-      <div class="card-body">
-        <h5 class="card-title text-dark">
-          <i class="fas fa-box me-2"></i>Producto a eliminar:
-        </h5>
-        <hr>
-        
-        <div class="row">
-          <div class="col-md-4 text-center">
-            {% if product.image %}
-              <img src="{{ product.image }}" alt="{{ product.name }}" 
-                   class="img-fluid rounded shadow-sm" 
-                   style="max-height: 150px; object-fit: cover;">
-            {% else %}
-              <div class="bg-light rounded d-flex align-items-center justify-content-center" 
-                   style="height: 150px;">
-                <i class="fas fa-image text-muted" style="font-size: 2rem;"></i>
-              </div>
-            {% endif %}
-          </div>
-          
-          <div class="col-md-8">
-            <table class="table table-borderless">
-              <tr>
-                <td><strong>Nombre:</strong></td>
-                <td>{{ product.name }}</td>
-              </tr>
-              <tr>
-                <td><strong>Precio:</strong></td>
-                <td>${{ product.price|floatformat:0 }}</td>
-              </tr>
-              <tr>
-                <td><strong>Marca:</strong></td>
-                <td>{{ product.brand.name|default:"Sin marca" }}</td>
-              </tr>
-              <tr>
-                <td><strong>Categorías:</strong></td>
-                <td>
-                  {% for category in product.categories.all %}
-                    <span class="badge bg-secondary me-1">{{ category.name }}</span>
-                  {% empty %}
-                    <span class="text-muted">Sin categorías</span>
-                  {% endfor %}
-                </td>
-              </tr>
-              <tr>
-                <td><strong>Descripción:</strong></td>
-                <td>
-                  {% if product.description|length > 100 %}
-                    {{ product.description|truncatechars:100 }}
-                  {% else %}
-                    {{ product.description }}
-                  {% endif %}
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
+    <style>
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+        }
 
-    <div class="text-center">
-      <p class="text-muted mb-4">
-        ¿Estás seguro de que deseas eliminar este producto? Esta acción eliminará permanentemente toda la información del producto.
-      </p>
-      
-      <form method="POST" class="d-inline">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger me-3">
-          <i class="fas fa-trash-alt me-1"></i> Sí, Eliminar Producto
-        </button>
-      </form>
-      
-      <a href="{% url 'list-products' %}" class="btn btn-secondary">
-        <i class="fas fa-times me-1"></i> Cancelar
-      </a>
+        .sidebar {
+            position: fixed;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar {
+                width: 100%;
+                position: relative;
+            }
+        }
+
+        .delete-card {
+            transition: transform 0.2s;
+            border: none;
+            border-radius: 15px;
+        }
+
+        .delete-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-header-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+        }
+
+        .card-header-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            color: #212529;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+        }
+
+        .product-image {
+            max-height: 200px;
+            width: auto;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            border: none;
+        }
+
+        .alert-custom {
+            border-radius: 10px;
+            border: none;
+        }
+
+        .field-label {
+            font-weight: 600;
+            color: #5A3E2B;
+        }
+
+        .warning-icon {
+            font-size: 4rem;
+            color: #ffc107;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .danger-zone {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(200, 35, 51, 0.1) 100%);
+            border: 2px solid rgba(220, 53, 69, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .product-badge {
+            background: linear-gradient(135deg, #5A3E2B 0%, #8B4513 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: 0.8em;
+        }
+    </style>
+
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <!-- Alerta de Advertencia -->
+            <div class="card shadow-lg delete-card mb-4">
+                <div class="card-header-warning">
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle warning-icon mb-3"></i>
+                        <h4 class="mb-0">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            Confirmación de Eliminación
+                        </h4>
+                        <p class="mb-0 opacity-75">Esta acción es permanente e irreversible</p>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="alert alert-warning alert-custom d-flex align-items-center" role="alert">
+                        <i class="fas fa-info-circle fa-lg me-3"></i>
+                        <div>
+                            <strong>¡Atención!</strong> Una vez eliminado, no podrás recuperar este producto ni su información.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del Producto -->
+            <div class="card shadow-lg delete-card mb-4">
+                <div class="card-header-danger">
+                    <h4 class="mb-0">
+                        <i class="fas fa-box-open me-2"></i>
+                        Producto a Eliminar
+                    </h4>
+                    <p class="mb-0 opacity-75">Revisa cuidadosamente la información antes de confirmar</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="row">
+                        <!-- Imagen del Producto -->
+                        <div class="col-md-4 text-center mb-4 mb-md-0">
+                            {% if product.image %}
+                                <img src="{{ product.image }}" alt="{{ product.name }}" 
+                                     class="product-image mb-3">
+                                <p class="text-muted small mb-0">
+                                    <i class="fas fa-image me-1"></i>Imagen del producto
+                                </p>
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-center bg-light rounded" 
+                                     style="height: 200px; border-radius: 15px;">
+                                    <div class="text-center">
+                                        <i class="fas fa-image fa-3x text-muted mb-2"></i>
+                                        <p class="text-muted mb-0">Sin imagen</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Información del Producto -->
+                        <div class="col-md-8">
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <span class="field-label">
+                                        <i class="fas fa-tag me-1"></i>Nombre:
+                                    </span>
+                                </div>
+                                <div class="col-sm-8">
+                                    <strong>{{ product.name }}</strong>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <span class="field-label">
+                                        <i class="fas fa-dollar-sign me-1"></i>Precio:
+                                    </span>
+                                </div>
+                                <div class="col-sm-8">
+                                    <span class="badge bg-success fs-6">${{ product.price|floatformat:0 }}</span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <span class="field-label">
+                                        <i class="fas fa-copyright me-1"></i>Marca:
+                                    </span>
+                                </div>
+                                <div class="col-sm-8">
+                                    {% if product.brand %}
+                                        <span class="product-badge">{{ product.brand.name }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Sin marca</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-sm-4">
+                                    <span class="field-label">
+                                        <i class="fas fa-list me-1"></i>Categorías:
+                                    </span>
+                                </div>
+                                <div class="col-sm-8">
+                                    {% for category in product.categories.all %}
+                                        <span class="product-badge me-1">{{ category.name }}</span>
+                                    {% empty %}
+                                        <span class="text-muted">Sin categorías</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <span class="field-label">
+                                        <i class="fas fa-align-left me-1"></i>Descripción:
+                                    </span>
+                                </div>
+                                <div class="col-sm-8">
+                                    <div class="bg-light p-3 rounded">
+                                        {% if product.description|length > 150 %}
+                                            {{ product.description|truncatechars:150 }}
+                                            <span class="text-muted">...</span>
+                                        {% else %}
+                                            {{ product.description }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zona de Peligro - Confirmación -->
+            <div class="card shadow-lg delete-card">
+                <div class="card-body p-4">
+                    <div class="danger-zone text-center">
+                        <h5 class="text-danger mb-3">
+                            <i class="fas fa-skull-crossbones me-2"></i>
+                            Zona de Peligro
+                        </h5>
+                        
+                        <p class="text-dark mb-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            ¿Estás completamente seguro de que deseas eliminar <strong>"{{ product.name }}"</strong>?
+                            <br>
+                            <small class="text-muted">Esta acción eliminará permanentemente toda la información del producto.</small>
+                        </p>
+                        
+                        <div class="d-flex gap-3 justify-content-center">
+                            <form method="POST" class="d-inline" id="deleteForm">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                                    <i class="fas fa-trash-alt me-1"></i> Sí, Eliminar Definitivamente
+                                </button>
+                            </form>
+                            
+                            <a href="{% url 'list-products' %}" class="btn btn-secondary">
+                                <i class="fas fa-shield-alt me-1"></i> No, Mantener Producto
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
-<style>
-  .main-content {
-    margin-left: 280px; /* Igual al ancho del sidebar */
-    padding: 20px;
-  }
-  
-  .sidebar {
-    position: fixed;
-    height: 100%;
-    top: 0;
-    left: 0;
-  }
-  
-  @media (max-width: 768px) {
-    .main-content {
-      margin-left: 0;
-    }
+<script>
+function confirmDelete() {
+    const productName = "{{ product.name|escapejs }}";
     
-    .sidebar {
-      width: 100%;
-      position: relative;
+    // Primera confirmación
+    const firstConfirm = confirm(
+        `⚠️ CONFIRMACIÓN FINAL ⚠️\n\n` +
+        `Estás a punto de eliminar permanentemente:\n` +
+        `"${productName}"\n\n` +
+        `Esta acción NO se puede deshacer.\n\n` +
+        `¿Deseas continuar?`
+    );
+    
+    if (firstConfirm) {
+        // Segunda confirmación más específica
+        const secondConfirm = confirm(
+            `🚨 ÚLTIMA OPORTUNIDAD 🚨\n\n` +
+            `Escribir en tu mente: "ELIMINAR"\n\n` +
+            `¿Confirmas la eliminación definitiva de "${productName}"?`
+        );
+        
+        if (secondConfirm) {
+            // Mostrar mensaje de procesando
+            const deleteBtn = document.querySelector('button[onclick="confirmDelete()"]');
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Eliminando...';
+            deleteBtn.disabled = true;
+            
+            // Enviar formulario
+            setTimeout(() => {
+                document.getElementById('deleteForm').submit();
+            }, 1000);
+        }
     }
-  }
-  
-  .card {
-    background: rgba(255, 255, 255, 0.9);
-  }
-  
-  .table td {
-    padding: 0.5rem 0.75rem;
-    vertical-align: middle;
-  }
-  
-  .btn-danger {
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-    border: none;
-    padding: 10px 20px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-  }
-  
-  .btn-danger:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-  }
-  
-  .btn-secondary {
-    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
-    border: none;
-    padding: 10px 20px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-  }
-  
-  .btn-secondary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
-  }
-</style>
+}
+
+// Efectos visuales al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    // Animación de entrada para las cards
+    const cards = document.querySelectorAll('.delete-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 150);
+    });
+    
+    // Efecto de parpadeo para el icono de advertencia
+    const warningIcon = document.querySelector('.warning-icon');
+    if (warningIcon) {
+        setInterval(() => {
+            warningIcon.style.opacity = '0.7';
+            setTimeout(() => {
+                warningIcon.style.opacity = '1';
+            }, 500);
+        }, 2000);
+    }
+});
+</script>
 {% endblock %}

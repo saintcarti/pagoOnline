@@ -214,9 +214,27 @@
                 <p class="total-amount">${{ total }}</p>
             </div>
             
-            <a href="{% url 'checkout' %}" class="checkout-btn">
-                <i class="fas fa-credit-card me-2"></i>Proceder al Pago
-            </a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'checkout' %}" class="checkout-btn">
+                    <i class="fas fa-credit-card me-2"></i>Proceder al Pago
+                </a>
+            {% else %}
+                <div class="auth-notice mb-3 p-3 rounded" style="background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border: 1px solid #f1c40f;">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-info-circle text-warning me-2"></i>
+                        <span class="fw-semibold" style="color: #856404;">Inicia sesión para continuar</span>
+                    </div>
+                    <p class="mb-3 small" style="color: #856404;">Debes iniciar sesión para proceder con el pago de tu compra.</p>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'login-page' %}?next={% url 'checkout' %}" class="checkout-btn" style="flex: 1; text-align: center;">
+                            <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                        </a>
+                        <a href="{% url 'register-page' %}" class="btn btn-outline-primary" style="flex: 1; text-align: center; border-radius: 15px; border-color: #8B4513; color: #8B4513;">
+                            <i class="fas fa-user-plus me-2"></i>Registrarse
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
         {% else %}
             <div class="empty-cart">
                 <i class="fas fa-shopping-cart"></i>

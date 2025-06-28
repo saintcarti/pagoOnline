@@ -9,11 +9,47 @@
     <!-- Añadir Font Awesome para los íconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>Dashboard Ferremas</title>
+    <style>
+        body { margin: 0; padding: 0; }
+        .wrapper { 
+            display: flex; 
+            min-height: 100vh; 
+            width: 100%; 
+        }
+        .sidebar { 
+            width: 280px; 
+            flex-shrink: 0; 
+            height: 100vh; 
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            overflow-y: auto; 
+            z-index: 1000;
+        }
+        .main-content { 
+            flex: 1; 
+            margin-left: 280px; 
+            padding: 2rem; 
+            background-color: #f8f9fa; 
+            min-height: 100vh; 
+            width: calc(100% - 280px);
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="wrapper">
         <!-- Sidebar -->
-        <div class="d-flex flex-column flex-shrink-0 p-3 bg-light sidebar" style="width: 280px;">
+        <div class="d-flex flex-column flex-shrink-0 p-3 bg-light sidebar">
             <a href="{% url 'dashboard-panel-page' %}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
                 <span class="fs-4">Ferremas Dashboard</span>
             </a>
@@ -26,9 +62,9 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="" 
-                    class="nav-link link-dark {% if request.resolver_match.url_name == 'admin_orders' %}active{% endif %}">
-                        <i class="fas fa-shopping-cart me-2"></i>Pedidos
+                    <a href="{% url 'list-orders' %}" 
+                    class="nav-link link-dark {% if 'orders' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="fas fa-shopping-cart me-2"></i>Órdenes
                     </a>
                 </li>
                 <li class="nav-item">
@@ -44,6 +80,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{% url 'list-contact-messages' %}"
+                    class="nav-link link-dark {% if 'contact-message' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="fas fa-envelope me-2"></i>Mensajes de Contacto
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{% url 'index-page' %}" 
                     class="nav-link link-dark {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
                         <i class="fas fa-external-link-alt me-2"></i>Ver sitio web
@@ -55,11 +97,7 @@
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle show" 
                 id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="true">
-                    {% if user.profile.image %}
-                        <img src="{{ user.profile.image.url }}" alt="Foto de perfil" width="32" height="32" class="rounded-circle me-2">
-                    {% else %}
-                        <img src="{% static 'images/default-profile.png' %}" alt="Foto de perfil" width="32" height="32" class="rounded-circle me-2">
-                    {% endif %}
+                    <img src="{% static 'images/default-profile.jpg' %}" alt="Foto de perfil" width="32" height="32" class="rounded-circle me-2">
                     <strong>{{ user.username }}</strong>
                 </a>
                 <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser2">
@@ -78,7 +116,158 @@
 
         <!-- Main Content -->
         <div class="main-content">
+
             {%block content%}
+            <div class="container-fluid">
+                <h1 class="h3 mb-4">Dashboard Principal</h1>
+                
+                
+                <!-- Tarjetas de estadísticas -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h4 class="card-title">{{ total_products }}</h4>
+                                        <p class="card-text">Total Productos</p>
+                                    </div>
+                                    <i class="fas fa-boxes fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h4 class="card-title">{{ total_users }}</h4>
+                                        <p class="card-text">Total Usuarios</p>
+                                    </div>
+                                    <i class="fas fa-users fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h4 class="card-title">{{ total_messages }}</h4>
+                                        <p class="card-text">Total Mensajes</p>
+                                    </div>
+                                    <i class="fas fa-envelope fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-dark">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h4 class="card-title">{{ pending_messages }}</h4>
+                                        <p class="card-text">Mensajes Pendientes</p>
+                                    </div>
+                                    <i class="fas fa-exclamation-circle fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensajes recientes -->
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-clock me-2"></i>
+                                    Mensajes Recientes (últimos 7 días)
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% if recent_messages %}
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Remitente</th>
+                                                    <th>Motivo</th>
+                                                    <th>Estado</th>
+                                                    <th>Fecha</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for message in recent_messages %}
+                                                <tr>
+                                                    <td>
+                                                        <strong>{{ message.name }}</strong><br>
+                                                        <small class="text-muted">{{ message.email }}</small>
+                                                    </td>
+                                                    <td>{{ message.get_reason_display }}</td>
+                                                    <td>
+                                                        <span class="badge bg-{{ message.get_status_color }}">
+                                                            {{ message.get_status_display }}
+                                                        </span>
+                                                    </td>
+                                                    <td>{{ message.created_at|date:"d/m/Y H:i" }}</td>
+                                                    <td>
+                                                        <a href="{% url 'view-contact-message' message.id %}" 
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <a href="{% url 'list-contact-messages' %}" class="btn btn-primary">
+                                            <i class="fas fa-envelope me-2"></i>
+                                            Ver Todos los Mensajes
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted text-center">No hay mensajes recientes</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-chart-pie me-2"></i>
+                                    Mensajes por Estado
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% if messages_by_status %}
+                                    {% for status in messages_by_status %}
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span>{{ status.status|capfirst }}</span>
+                                        <span class="badge bg-secondary">{{ status.count }}</span>
+                                    </div>
+                                    <div class="progress mb-3" style="height: 10px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: {% widthratio status.count total_messages 100 %}%">
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-muted text-center">No hay mensajes</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {%endblock%}
         </div>
     </div>

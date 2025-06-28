@@ -1,0 +1,405 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- Hero Section -->
+<header style="background: linear-gradient(135deg, #F2E8D5 0%, #E8D5C4 100%); box-shadow: 0 4px 15px rgba(0,0,0,0.1);" class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 style="color: #5A3E2B;" class="display-2 fw-bold mb-3">FERREMAS</h1>
+                <p style="color: #5A3E2B;" class="lead fs-4">Tu ferretería de confianza ahora online. Calidad, variedad y comodidad en un solo lugar.</p>
+                <div class="d-flex gap-3 mt-4 flex-wrap">
+                    <span class="badge bg-primary px-3 py-2 fs-6">
+                        <i class="bi bi-truck me-1"></i>Envío a todo Chile
+                    </span>
+                    <span class="badge bg-success px-3 py-2 fs-6">
+                        <i class="bi bi-shield-check me-1"></i>Productos garantizados
+                    </span>
+                    <span class="badge bg-warning text-dark px-3 py-2 fs-6">
+                        <i class="bi bi-clock me-1"></i>Entrega rápida
+                    </span>
+                </div>
+                <div class="mt-4">
+                    <a href="{% url 'products-page' %}" class="btn btn-primary btn-lg me-3">
+                        <i class="bi bi-shop me-2"></i>Ver Productos
+                    </a>
+                    <a href="{% url 'contact-page' %}" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-chat-dots me-2"></i>Contáctanos
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="position-relative">
+                    <div class="bg-white rounded-circle p-4 shadow-lg d-inline-block">
+                        <i class="bi bi-tools display-1" style="color: #5A3E2B;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="py-5">
+    <div class="container">
+        
+        <!-- Descripción de la Empresa -->
+        <section class="mb-5">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-primary rounded-circle p-3 d-inline-block mb-3">
+                                <i class="bi bi-award text-white fs-2"></i>
+                            </div>
+                            <h5 class="fw-bold">Empresa Confiable</h5>
+                            <p class="text-muted">FERREMAS es una empresa chilena consolidada como una de las marcas más confiables del rubro gracias a la calidad de sus productos.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-success rounded-circle p-3 d-inline-block mb-3">
+                                <i class="bi bi-globe text-white fs-2"></i>
+                            </div>
+                            <h5 class="fw-bold">Alcance Nacional</h5>
+                            <p class="text-muted">Con nuestra plataforma de comercio electrónico, llegamos a clientes de todo el país desde la comodidad de su hogar.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-info rounded-circle p-3 d-inline-block mb-3">
+                                <i class="bi bi-lightning text-white fs-2"></i>
+                            </div>
+                            <h5 class="fw-bold">Soluciones Rápidas</h5>
+                            <p class="text-muted">Stock disponible y entregas eficientes para proyectos del hogar y obras de mayor envergadura.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Nuestros Valores -->
+        <section class="mb-5">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="fw-bold mb-4" style="color: #5A3E2B;">
+                        <i class="bi bi-star-fill me-3"></i>Lo que nos diferencia
+                    </h2>
+                    <p class="lead mb-4">
+                        Lo que diferencia a FERREMAS de otras ferreterías es nuestro compromiso inquebrantable con la calidad y el servicio al cliente.
+                    </p>
+                    
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary rounded-circle p-2 me-3">
+                                    <i class="bi bi-check-lg text-white"></i>
+                                </div>
+                                <span><strong>Marcas reconocidas:</strong> Trabajamos únicamente con productos duraderos y de calidad</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-success rounded-circle p-2 me-3">
+                                    <i class="bi bi-people text-white"></i>
+                                </div>
+                                <span><strong>Atención personalizada:</strong> Enfoque en las necesidades reales del cliente</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-warning rounded-circle p-2 me-3">
+                                    <i class="bi bi-boxes text-white"></i>
+                                </div>
+                                <span><strong>Stock disponible:</strong> Disponibilidad constante para entregas rápidas</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-info rounded-circle p-2 me-3">
+                                    <i class="bi bi-rocket text-white"></i>
+                                </div>
+                                <span><strong>Innovación:</strong> Plataforma moderna, rápida y eficiente</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="text-center">
+                        <div class="card border-0 shadow-lg p-4">
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-6">
+                                        <div class="bg-primary rounded p-3 text-white text-center">
+                                            <i class="bi bi-shop-window fs-1"></i>
+                                            <h4 class="mt-2">500+</h4>
+                                            <small>Productos</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="bg-success rounded p-3 text-white text-center">
+                                            <i class="bi bi-people-fill fs-1"></i>
+                                            <h4 class="mt-2">1000+</h4>
+                                            <small>Clientes</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="bg-warning rounded p-3 text-white text-center">
+                                            <i class="bi bi-geo-alt-fill fs-1"></i>
+                                            <h4 class="mt-2">15</h4>
+                                            <small>Regiones</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="bg-info rounded p-3 text-white text-center">
+                                            <i class="bi bi-calendar-check fs-1"></i>
+                                            <h4 class="mt-2">25+</h4>
+                                            <small>Años</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Productos Destacados -->
+        {% if products %}
+        <section class="mb-5">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold" style="color: #5A3E2B;">
+                    <i class="bi bi-star-fill me-3"></i>Productos Destacados
+                </h2>
+                <p class="text-muted">Descubre algunos de nuestros productos más populares</p>
+            </div>
+
+            <!-- Carrusel Mejorado -->
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-10 col-xl-8">
+                    <div id="productCarousel" class="carousel slide shadow-lg rounded-4 overflow-hidden" data-bs-ride="carousel" data-bs-interval="4000">
+                        <div class="carousel-indicators">
+                            {% for producto in products %}
+                            <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="{{ forloop.counter0 }}" 
+                                    {% if forloop.first %}class="active" aria-current="true"{% endif %} 
+                                    aria-label="Slide {{ forloop.counter }}"></button>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="carousel-inner rounded-4">
+                            {% for producto in products %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <div class="position-relative carousel-image-container">
+                                    <img src="{{ producto.image }}" class="d-block w-100 carousel-image" 
+                                         alt="{{ producto.name }}"
+                                         loading="lazy"
+                                         onerror="this.onerror=null; this.src='/static/images/default-product.jpg';">
+                                    
+                                    <!-- Overlay para mejor contraste -->
+                                    <div class="carousel-overlay"></div>
+                                    
+                                    <!-- Caption adaptado -->
+                                    <div class="carousel-caption">
+                                        <div class="carousel-content">
+                                            <div class="product-badge mb-2">
+                                                <span class="badge bg-primary">
+                                                    <i class="bi bi-star-fill me-1"></i>Destacado
+                                                </span>
+                                            </div>
+                                            <h5 class="fw-bold text-white mb-2">{{ producto.name }}</h5>
+                                            {% if producto.description %}
+                                                <p class="text-white mb-3">{{ producto.description|truncatewords:12 }}</p>
+                                            {% endif %}
+                                            {% if producto.price %}
+                                                <div class="price-container mb-3">
+                                                    <span class="price-label">Precio:</span>
+                                                    <span class="price-value">${{ producto.price }}</span>
+                                                </div>
+                                            {% endif %}
+                                            <div class="carousel-actions">
+                                                <form method="POST" action="{% url 'add_to_cart' producto.id %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-primary btn-sm me-2">
+                                                        <i class="bi bi-cart-plus me-1"></i>
+                                                        <span class="d-none d-sm-inline">Agregar al carrito</span>
+                                                        <span class="d-sm-none">Agregar</span>
+                                                    </button>
+                                                </form>
+                                                <a href="{% url 'products-page' %}" class="btn btn-outline-light btn-sm">
+                                                    <i class="bi bi-eye me-1"></i>
+                                                    <span class="d-none d-sm-inline">Ver más productos</span>
+                                                    <span class="d-sm-none">Ver más</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Controles mejorados -->
+                        <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                            <div class="carousel-control-custom">
+                                <i class="bi bi-chevron-left"></i>
+                            </div>
+                            <span class="visually-hidden">Anterior</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                            <div class="carousel-control-custom">
+                                <i class="bi bi-chevron-right"></i>
+                            </div>
+                            <span class="visually-hidden">Siguiente</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del carrusel para móviles -->
+            <div class="d-md-none mt-4">
+                <div class="row g-3">
+                    {% for producto in products %}
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="row g-0">
+                                <div class="col-4">
+                                    <img src="{{ producto.image }}" class="img-fluid h-100 object-fit-cover rounded-start" alt="{{ producto.name }}">
+                                </div>
+                                <div class="col-8">
+                                    <div class="card-body p-3">
+                                        <h6 class="card-title fw-bold">{{ producto.name }}</h6>
+                                        {% if producto.price %}
+                                            <p class="text-primary fw-bold mb-2">${{ producto.price }}</p>
+                                        {% endif %}
+                                        <form method="POST" action="{% url 'add_to_cart' producto.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-primary btn-sm">
+                                                <i class="bi bi-cart-plus me-1"></i>Agregar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Categorías Populares -->
+        <section class="mb-5">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold" style="color: #5A3E2B;">
+                    <i class="bi bi-grid me-3"></i>Categorías Populares
+                </h2>
+                <p class="text-muted">Encuentra lo que necesitas en nuestras categorías principales</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm text-center category-card">
+                        <div class="card-body p-4">
+                            <div class="bg-primary rounded-circle p-3 d-inline-block mb-3">
+                                <i class="bi bi-hammer text-white fs-2"></i>
+                            </div>
+                            <h5 class="fw-bold">Herramientas</h5>
+                            <p class="text-muted">Herramientas manuales y eléctricas de alta calidad</p>
+                            <a href="{% url 'products-page' %}" class="btn btn-outline-primary">Ver productos</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm text-center category-card">
+                        <div class="card-body p-4">
+                            <div class="bg-success rounded-circle p-3 d-inline-block mb-3">
+                                <i class="bi bi-house text-white fs-2"></i>
+                            </div>
+                            <h5 class="fw-bold">Construcción</h5>
+                            <p class="text-muted">Materiales para construcción y renovación</p>
+                            <a href="{% url 'products-page' %}" class="btn btn-outline-success">Ver productos</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm text-center category-card">
+                        <div class="card-body p-4">
+                            <div class="bg-warning rounded-circle p-3 d-inline-block mb-3">
+                                <i class="bi bi-wrench text-white fs-2"></i>
+                            </div>
+                            <h5 class="fw-bold">Ferretería</h5>
+                            <p class="text-muted">Tornillos, clavos y accesorios varios</p>
+                            <a href="{% url 'products-page' %}" class="btn btn-outline-warning">Ver productos</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100 border-0 shadow-sm text-center category-card">
+                        <div class="card-body p-4">
+                            <div class="bg-info rounded-circle p-3 d-inline-block mb-3">
+                                <i class="bi bi-paint-bucket text-white fs-2"></i>
+                            </div>
+                            <h5 class="fw-bold">Pintura</h5>
+                            <p class="text-muted">Pinturas, barnices y accesorios de pintura</p>
+                            <a href="{% url 'products-page' %}" class="btn btn-outline-info">Ver productos</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="text-center py-5" style="background: linear-gradient(135deg, #F2E8D5 0%, #E8D5C4 100%); border-radius: 15px;">
+            <div class="container">
+                <h3 class="fw-bold mb-3" style="color: #5A3E2B;">¿Listo para comenzar tu proyecto?</h3>
+                <p class="lead mb-4" style="color: #5A3E2B;">Explora nuestro catálogo completo y encuentra todo lo que necesitas</p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="{% url 'products-page' %}" class="btn btn-primary btn-lg px-4">
+                        <i class="bi bi-shop me-2"></i>Ver Todos los Productos
+                    </a>
+                    <a href="{% url 'contact-page' %}" class="btn btn-outline-primary btn-lg px-4">
+                        <i class="bi bi-chat-dots me-2"></i>Consultar Precios
+                    </a>
+                    <a href="{% url 'about-page' %}" class="btn btn-outline-primary btn-lg px-4">
+                        <i class="bi bi-info-circle me-2"></i>Conocer Más
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<!-- Estilos adicionales para efectos hover -->
+<style>
+.category-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.carousel-control-prev:hover .bg-dark,
+.carousel-control-next:hover .bg-dark {
+    background-color: rgba(0,0,0,0.8) !important;
+}
+
+.badge {
+    transition: transform 0.2s ease;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+</style>
+
+{% endblock %}
