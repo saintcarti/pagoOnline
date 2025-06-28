@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from miPaypal.models import Product
-from miPaypal.forms import ProductForm
+from miPaypal.forms import ProductForm, CustomUserCreationForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login as auth_login, logout
+from django.contrib import messages
 
 # Create your views here.
 def index(request):
@@ -9,12 +11,45 @@ def index(request):
 
     return render(request,'ecommerce/index.html',{"products":product})
 
+def custom_logout(request):
+    logout(request)
+    return redirect('index-page')
 
 def login(request):
-    return render(request,'auth/login.html')
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            auth_login(request, user)
+            return redirect('index-page')
+        else:
+            messages.error(request, 'Usuario o contraseña incorrectos')
+    
+    return render(request, 'auth/login.html')
 
 def register(request):
-    return render(request,'auth/register.html')
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.rol = 'cliente'  # Asignamos automáticamente el rol de cliente
+            user.save()
+            
+            # Autenticar al usuario después del registro
+            auth_login(request, user)
+            messages.success(request, 'Registro exitoso!')
+            return redirect('index-page')
+        else:
+            # Pasar los errores del formulario al template
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    else:
+        form = CustomUserCreationForm()
+    
+    return render(request, 'auth/register.html', {'form': form})
 
 
 def products(request):
@@ -41,7 +76,6 @@ def admin_profile(request):
 def dashboard(request):
     return render(request,'dashboard-panel/dashboard.html')
 
-
 @login_required
 def list_products(request):
     products = Product.objects.all()
@@ -127,3 +161,15 @@ def contact(request):
 
 def dashboard(request):
     return render(request,'dashboard-panel/dashboard.html')
+
+def admin_required(view_func=None, redirect_url='index-page'):
+    """
+    Decorador que verifica si el usuario está autenticado y es staff/admin
+    """
+    actual_decorator = user_passes_test(
+        lambda u: u.is_authenticated and u.is_staff,
+        login_url=redirect_url
+    )
+    if view_func:
+        return actual_decorator(view_func)
+    return actual_decorator
