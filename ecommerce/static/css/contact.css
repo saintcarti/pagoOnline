@@ -1,0 +1,261 @@
+.contact-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    border: 1px solid #6C757D; /* Acero gris */
+    border-radius: 12px;
+  }
+  
+  h2 {
+    color: #333333;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  
+  label {
+    display: block;
+    margin-top: 1rem;
+    color: #333333; /* Gris oscuro */
+  }
+  
+  input,
+textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #6C757D;
+  border-radius: 8px;
+  margin-top: 0.3rem;
+}
+  
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: #B22222; /* Rojo ladrillo */
+    box-shadow: 0 0 5px rgba(178, 34, 34, 0.4);
+  }
+  
+  button {
+    background-color: #B22222; /* Rojo ladrillo */
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 8px;
+    margin-top: 1.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #a11d1d;
+  }
+  
+  .error {
+    color: #B22222;
+    font-size: 0.85rem;
+    margin-top: -0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .success-animation {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #FFC107; /* Amarillo mostaza */
+    color: #212121; /* Negro carbón */
+    border-radius: 6px;
+    text-align: center;
+    animation: fadeIn 0.8s ease-in-out;
+    font-weight: bold;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .thank-you-card {
+    background-color: #FFC107; /* Amarillo mostaza */
+    padding: 1.5rem;
+    border-radius: 10px;
+    text-align: center;
+    color: #212121; /* Negro carbón */
+    font-weight: bold;
+  }
+
+  .animate {
+    animation: slideRight 4.5s ease forwards;
+  }
+
+  @keyframes slideRight {
+    0% {
+      opacity: 0;
+      transform: translateX(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translateX(25px);
+    }
+    100% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+
+  .error {
+    color: #B22222; /* Rojo ladrillo */
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+  
+  .contact-section {
+    padding: 3rem 2rem;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  .contact-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  
+  .contact-header h1 {
+    font-size: 2.8rem;
+    color: #1f2d3d;
+    margin-bottom: 0.5rem;
+  }
+  
+  .contact-header p {
+    font-size: 1.1rem;
+    color: #555;
+  }
+  
+  .contact-grid {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 3rem;
+  }
+  
+  @media (min-width: 992px) {
+    .contact-grid {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+  }
+  
+  .form-box {
+    flex: 1;
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+  }
+  
+  .form-box h2 {
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+  }
+  
+  .form-group {
+    margin-bottom: 1.2rem;
+  }
+  
+  .form-group label {
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    display: block;
+    color: #2f2f2f;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.65rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  
+  .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  
+  .error {
+    font-size: 0.85rem;
+    color: #e74c3c;
+    margin-top: 0.3rem;
+  }
+  
+  .btn-primary {
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-primary:hover {
+    background-color: #084298;
+  }
+  
+  .thank-you-message {
+    padding: 2rem;
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+  .branches-box {
+    flex: 1;
+  }
+  
+  .branches-box h2 {
+    margin-bottom: 1rem;
+    color: #2c3e50;
+  }
+  
+  .branches-grid {
+    display: grid;
+    gap: 1.5rem;
+  }
+  
+  @media (min-width: 768px) {
+    .branches-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  
+  .branch-card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .branch-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+  
+  .branch-info {
+    padding: 1rem;
+  }
+  
+  .branch-info h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+  }
+  
+  .btn-link {
+    display: inline-block;
+    margin-top: 0.75rem;
+    color: #0d6efd;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  

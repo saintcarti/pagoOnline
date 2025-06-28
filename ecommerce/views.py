@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from miPaypal.models import Product, CustomUser
+from miPaypal.models import Product, CustomUser, Brand, Category
 from miPaypal.forms import ProductForm, CustomUserCreationForm, StaffRegistrationForm,UserEditForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login as auth_login, logout
@@ -118,10 +118,10 @@ def contact_view(request):
             messages.success(request, '¡Gracias por tu mensaje! Nos pondremos en contacto contigo pronto.')
             return redirect('contact_success')
     
-    return render(request, 'contact.html', context)
+    return render(request, 'ecommerce/contact.html', context)
 
 def contact_success(request):
-    return render(request, 'contact.html', {'form_submitted': True})
+    return render(request, 'ecommerce/contact.html', {'form_submitted': True})
 
 @admin_required
 def admin_settings(request):
@@ -137,9 +137,54 @@ def dashboard(request):
 
 @admin_required
 def list_products(request):
-    products = Product.objects.all()
+    # Obtener parámetros de filtro
+    category_id = request.GET.get('category')
+    brand_id = request.GET.get('brand')
+    search_query = request.GET.get('search')
+    page_number = request.GET.get('page')
+    
+    # Obtener todos los productos
+    products = Product.objects.all().order_by('-id')
+    
+    # Aplicar filtros
+    current_category = None
+    current_brand = None
+    
+    if category_id:
+        try:
+            current_category = Category.objects.get(id=category_id)
+            products = products.filter(categories=current_category)
+        except Category.DoesNotExist:
+            pass
+    
+    if brand_id:
+        try:
+            current_brand = Brand.objects.get(id=brand_id)
+            products = products.filter(brand=current_brand)
+        except Brand.DoesNotExist:
+            pass
+    
+    if search_query:
+        products = products.filter(
+            Q(name__icontains=search_query) | 
+            Q(description__icontains=search_query)
+        )
+    
+    # Paginación
+    paginator = Paginator(products, 10)
+    page_obj = paginator.get_page(page_number)
+    
+    # Obtener todas las categorías y marcas para los filtros
+    categories = Category.objects.all()
+    brands = Brand.objects.all()
+    
     return render(request, 'dashboard-panel/crud-products/list-product.html', {
-        "products": products
+        'page_obj': page_obj,
+        'categories': categories,
+        'brands': brands,
+        'current_category': current_category,
+        'current_brand': current_brand,
+        'search_query': search_query or '',
     })
 
 
@@ -150,13 +195,47 @@ def crear_pview(request):
         price = request.POST.get('price')
         description = request.POST.get('description')
         image = request.POST.get('image')
+        brand_id = request.POST.get('brand')
+        categories_ids = request.POST.getlist('categories')
 
+        # Crear el producto
         product = Product(name=name, price=price, description=description, image=image)
+        
+        # Asignar la marca si se seleccionó una
+        if brand_id:
+            try:
+                brand = Brand.objects.get(id=brand_id)
+                product.brand = brand
+            except Brand.DoesNotExist:
+                pass
+        
         product.save()
+        
+        # Asignar las categorías después de guardar
+        if categories_ids:
+            categories = Category.objects.filter(id__in=categories_ids)
+            product.categories.set(categories)
 
         return redirect('list-products')
 
-    return render(request, 'dashboard-panel/crud-products/create-product.html')
+    # Pasar las marcas y categorías al template
+    brands = Brand.objects.all()
+    categories = Category.objects.all()
+    return render(request, 'dashboard-panel/crud-products/create-product.html', {
+        'brands': brands,
+        'categories': categories
+    })
+
+@admin_required
+def delete_product(request, pk):
+    """Vista para eliminar productos"""
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == 'POST':
+        product.delete()
+        messages.success(request, f'Producto {product.name} eliminado correctamente')
+        return redirect('list-products')
+    return render(request, 'dashboard-panel/crud-products/confirm-delete.html', {'product': product})
+
 
 @admin_required
 def update_product(request, pk):
@@ -246,3 +325,19 @@ def edit_user(request, user_id):
         form = UserEditForm(instance=user)
     
     return render(request, 'dashboard-panel/crud-users/edit-user.html', {'form': form})
+
+@admin_required
+def product_detail(request, pk):
+    """Vista para mostrar los detalles completos de un producto"""
+    product = get_object_or_404(Product, pk=pk)
+    
+    # Obtener productos relacionados (misma marca o categorías similares)
+    related_products = Product.objects.filter(
+        Q(brand=product.brand) | 
+        Q(categories__in=product.categories.all())
+    ).exclude(pk=product.pk).distinct()[:4]
+    
+    return render(request, 'dashboard-panel/crud-products/product-detail.html', {
+        'product': product,
+        'related_products': related_products
+    })
