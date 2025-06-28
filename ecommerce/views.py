@@ -56,9 +56,55 @@ def register(request):
 
 
 def products(request):
-    product = Product.objects.all()
+    # Obtener parámetros de filtro
+    category_id = request.GET.get('category')
+    brand_id = request.GET.get('brand')
+    search_query = request.GET.get('search')
+    
+    # Obtener todos los productos
+    product_list = Product.objects.all().order_by('-id')
+    
+    # Aplicar filtros
+    current_category = None
+    current_brand = None
+    
+    if category_id:
+        try:
+            current_category = Category.objects.get(id=category_id)
+            product_list = product_list.filter(categories=current_category)
+        except Category.DoesNotExist:
+            pass
+    
+    if brand_id:
+        try:
+            current_brand = Brand.objects.get(id=brand_id)
+            product_list = product_list.filter(brand=current_brand)
+        except Brand.DoesNotExist:
+            pass
+    
+    if search_query:
+        product_list = product_list.filter(
+            Q(name__icontains=search_query) | 
+            Q(description__icontains=search_query)
+        )
+    
+    # Configurar paginación - 12 productos por página
+    paginator = Paginator(product_list, 12)
+    page_number = request.GET.get('page')
+    products = paginator.get_page(page_number)
+    
+    # Obtener todas las categorías y marcas para los filtros
+    categories = Category.objects.all()
+    brands = Brand.objects.all()
 
-    return render(request,'ecommerce/products.html',{"products":product})
+    return render(request,'ecommerce/products.html',{
+        "products": products,
+        "categories": categories,
+        "brands": brands,
+        "current_category": current_category,
+        "current_brand": current_brand,
+        "search_query": search_query or '',
+    })
 
 def about(request):
     return render(request,'ecommerce/about.html')

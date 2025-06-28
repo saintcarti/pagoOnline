@@ -3,126 +3,423 @@
 
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'css/contact.css' %}">
-<section class="contact-section">
-  <div class="contact-header">
-    <h1>Estamos aquí para ayudarte</h1>
-    <p>Contáctanos o visita cualquiera de nuestras sucursales a lo largo del país.</p>
-  </div>
-
-  <div class="contact-grid">
-    <!-- Formulario de Contacto -->
-    <div class="form-box">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
-
-      {% if not form_submitted %}
-      <form method="post" novalidate>
-        {% csrf_token %}
-        <h2>Formulario de Contacto</h2>
-
-        <!-- Campo Nombre -->
-        <div class="form-group">
-          <label for="id_name">Nombre completo</label>
-          <input type="text" id="id_name" name="name" 
-                 value="{{ form_data.name|default:'' }}" required>
-          {% if form_errors.name %}
-            <div class="error">{{ form_errors.name }}</div>
-          {% endif %}
+<!-- Hero Section -->
+<header style="background: linear-gradient(135deg, #F2E8D5 0%, #E8D5C4 100%); box-shadow: 0 4px 15px rgba(0,0,0,0.1);" class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 style="color: #5A3E2B;" class="display-3 fw-bold mb-3">Contáctanos</h1>
+                <p style="color: #5A3E2B;" class="lead fs-4">Estamos aquí para ayudarte. Contáctanos o visita cualquiera de nuestras sucursales a lo largo del país.</p>
+                <div class="d-flex gap-3 mt-4 flex-wrap">
+                    <span class="badge bg-primary px-3 py-2 fs-6">
+                        <i class="bi bi-telephone me-1"></i>Atención 24/7
+                    </span>
+                    <span class="badge bg-success px-3 py-2 fs-6">
+                        <i class="bi bi-geo-alt me-1"></i>Multiple sucursales
+                    </span>
+                    <span class="badge bg-warning text-dark px-3 py-2 fs-6">
+                        <i class="bi bi-chat-dots me-1"></i>Respuesta rápida
+                    </span>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="position-relative">
+                    <div class="bg-white rounded-circle p-4 shadow-lg d-inline-block">
+                        <i class="bi bi-headset display-1" style="color: #5A3E2B;"></i>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <!-- Campo Email -->
-        <div class="form-group">
-          <label for="id_email">Correo electrónico</label>
-          <input type="email" id="id_email" name="email" 
-                 value="{{ form_data.email|default:'' }}" required>
-          {% if form_errors.email %}
-            <div class="error">{{ form_errors.email }}</div>
-          {% endif %}
-        </div>
-
-        <!-- Campo Teléfono -->
-        <div class="form-group">
-          <label for="id_phone">Teléfono</label>
-          <input type="tel" id="id_phone" name="phone" 
-                 value="{{ form_data.phone|default:'' }}" 
-                 pattern="[0-9]{9,10}" required>
-          {% if form_errors.phone %}
-            <div class="error">{{ form_errors.phone }}</div>
-          {% endif %}
-        </div>
-
-        <!-- Campo Motivo -->
-        <div class="form-group">
-          <label for="id_reason">Motivo</label>
-          <select id="id_reason" name="reason" required>
-            <option value="" disabled selected>Seleccione una opción</option>
-            <option value="ventas" {% if form_data.reason == 'ventas' %}selected{% endif %}>Consulta de productos</option>
-            <option value="soporte" {% if form_data.reason == 'soporte' %}selected{% endif %}>Soporte técnico</option>
-            <option value="reclamo" {% if form_data.reason == 'reclamo' %}selected{% endif %}>Reclamo</option>
-            <option value="otro" {% if form_data.reason == 'otro' %}selected{% endif %}>Otro</option>
-          </select>
-          {% if form_errors.reason %}
-            <div class="error">{{ form_errors.reason }}</div>
-          {% endif %}
-        </div>
-
-        <!-- Campo Mensaje -->
-        <div class="form-group">
-          <label for="id_message">Mensaje</label>
-          <textarea id="id_message" name="message" required>{{ form_data.message|default:'' }}</textarea>
-          {% if form_errors.message %}
-            <div class="error">{{ form_errors.message }}</div>
-          {% endif %}
-        </div>
-
-        <button type="submit" class="btn-primary">Enviar mensaje</button>
-      </form>
-      {% else %}
-        <div class="thank-you-message">
-          <h3>¡Gracias por tu mensaje!</h3>
-          <p>Nos pondremos en contacto contigo muy pronto.</p>
-          <a href="{% url 'contact' %}" class="btn-link">Enviar otro mensaje</a>
-        </div>
-      {% endif %}
     </div>
+</header>
 
-    <!-- Sucursales (Contenido estático) -->
-    <div class="branches-box">
-      <h2>Nuestras Sucursales</h2>
-      <div class="branches-grid">
-        <!-- Sucursal 1 -->
-        <div class="branch-card">
-          <img src="{% static 'images/sucursal1.jpeg' %}" alt="Sucursal Central Santiago">
-          <div class="branch-info">
-            <h3>Sucursal Central Santiago</h3>
-            <p><strong>Dirección:</strong> Av. Libertador Bernardo O'Higgins 2450, Santiago Centro</p>
-            <p><strong>Teléfono:</strong> +56 2 2987 1234</p>
-            <p><strong>Horario:</strong> Lunes a Sábado, 9:00 - 18:00</p>
-            <a class="btn-link" href="mailto:santiago@ferremax.cl">Contactar</a>
-          </div>
-        </div>
+<section class="py-5">
+    <div class="container">
         
-        <!-- Sucursal 2 -->
-        <div class="branch-card">
-          <img src="{% static 'images/sucursal2.jpeg' %}" alt="Sucursal Maipú">
-          <div class="branch-info">
-            <h3>Sucursal Maipú</h3>
-            <p><strong>Dirección:</strong> Camino a Melipilla 12345, Maipú, Santiago</p>
-            <p><strong>Teléfono:</strong> +56 2 2345 6789</p>
-            <p><strong>Horario:</strong> Lunes a Sábado, 9:00 - 18:00</p>
-            <a class="btn-link" href="mailto:maipu@ferremax.cl">Contactar</a>
-          </div>
+        <!-- Métodos de Contacto -->
+        <div class="row mb-5">
+            <div class="col-12 text-center mb-5">
+                <h2 class="fw-bold" style="color: #5A3E2B;">
+                    <i class="bi bi-chat-square-dots me-3"></i>¿Cómo prefieres contactarnos?
+                </h2>
+                <p class="text-muted">Elige la opción que más te convenga</p>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm text-center">
+                    <div class="card-body p-4">
+                        <div class="bg-primary rounded-circle p-3 d-inline-block mb-3">
+                            <i class="bi bi-envelope-fill text-white fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">Email</h5>
+                        <p class="text-muted mb-3">Envíanos un mensaje y te responderemos pronto</p>
+                        <a href="mailto:contacto@ferremax.cl" class="btn btn-outline-primary">
+                            contacto@ferremax.cl
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm text-center">
+                    <div class="card-body p-4">
+                        <div class="bg-success rounded-circle p-3 d-inline-block mb-3">
+                            <i class="bi bi-telephone-fill text-white fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">Teléfono</h5>
+                        <p class="text-muted mb-3">Llámanos de lunes a sábado</p>
+                        <a href="tel:+56223456789" class="btn btn-outline-success">
+                            +56 2 2345 6789
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100 border-0 shadow-sm text-center">
+                    <div class="card-body p-4">
+                        <div class="bg-info rounded-circle p-3 d-inline-block mb-3">
+                            <i class="bi bi-geo-alt-fill text-white fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">Presencial</h5>
+                        <p class="text-muted mb-3">Visita nuestras sucursales</p>
+                        <a href="#sucursales" class="btn btn-outline-info">
+                            Ver ubicaciones
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <!-- Agrega más sucursales según sea necesario -->
-      </div>
+
+        <div class="row g-4">
+            <!-- Formulario de Contacto -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-header bg-primary text-white text-center py-4">
+                        <h3 class="mb-0">
+                            <i class="bi bi-chat-left-text me-2"></i>Formulario de Contacto
+                        </h3>
+                        <p class="mb-0">Completa el formulario y nos pondremos en contacto contigo</p>
+                    </div>
+                    <div class="card-body p-4">
+                        
+                        <!-- Mensajes de alerta -->
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    <i class="bi bi-check-circle me-2"></i>{{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if not form_submitted %}
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+
+                            <!-- Campo Nombre -->
+                            <div class="mb-3">
+                                <label for="id_name" class="form-label fw-bold">
+                                    <i class="bi bi-person me-1"></i>Nombre completo
+                                </label>
+                                <input type="text" id="id_name" name="name" class="form-control form-control-lg"
+                                       value="{{ form_data.name|default:'' }}" required
+                                       placeholder="Ingresa tu nombre completo">
+                                {% if form_errors.name %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="bi bi-exclamation-triangle me-1"></i>{{ form_errors.name }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Campo Email -->
+                            <div class="mb-3">
+                                <label for="id_email" class="form-label fw-bold">
+                                    <i class="bi bi-envelope me-1"></i>Correo electrónico
+                                </label>
+                                <input type="email" id="id_email" name="email" class="form-control form-control-lg"
+                                       value="{{ form_data.email|default:'' }}" required
+                                       placeholder="ejemplo@correo.com">
+                                {% if form_errors.email %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="bi bi-exclamation-triangle me-1"></i>{{ form_errors.email }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Campo Teléfono -->
+                            <div class="mb-3">
+                                <label for="id_phone" class="form-label fw-bold">
+                                    <i class="bi bi-telephone me-1"></i>Teléfono
+                                </label>
+                                <input type="tel" id="id_phone" name="phone" class="form-control form-control-lg"
+                                       value="{{ form_data.phone|default:'' }}" pattern="[0-9]{9,10}" required
+                                       placeholder="912345678">
+                                {% if form_errors.phone %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="bi bi-exclamation-triangle me-1"></i>{{ form_errors.phone }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Campo Motivo -->
+                            <div class="mb-3">
+                                <label for="id_reason" class="form-label fw-bold">
+                                    <i class="bi bi-tag me-1"></i>Motivo de contacto
+                                </label>
+                                <select id="id_reason" name="reason" class="form-select form-select-lg" required>
+                                    <option value="" disabled selected>Seleccione una opción</option>
+                                    <option value="ventas" {% if form_data.reason == 'ventas' %}selected{% endif %}>
+                                        🛒 Consulta de productos
+                                    </option>
+                                    <option value="soporte" {% if form_data.reason == 'soporte' %}selected{% endif %}>
+                                        🔧 Soporte técnico
+                                    </option>
+                                    <option value="reclamo" {% if form_data.reason == 'reclamo' %}selected{% endif %}>
+                                        ⚠️ Reclamo
+                                    </option>
+                                    <option value="otro" {% if form_data.reason == 'otro' %}selected{% endif %}>
+                                        💬 Otro
+                                    </option>
+                                </select>
+                                {% if form_errors.reason %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="bi bi-exclamation-triangle me-1"></i>{{ form_errors.reason }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Campo Mensaje -->
+                            <div class="mb-4">
+                                <label for="id_message" class="form-label fw-bold">
+                                    <i class="bi bi-chat-left-dots me-1"></i>Mensaje
+                                </label>
+                                <textarea id="id_message" name="message" class="form-control" rows="5" required
+                                          placeholder="Escribe tu mensaje aquí...">{{ form_data.message|default:'' }}</textarea>
+                                {% if form_errors.message %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="bi bi-exclamation-triangle me-1"></i>{{ form_errors.message }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="bi bi-send me-2"></i>Enviar mensaje
+                            </button>
+                        </form>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <div class="bg-success rounded-circle p-4 d-inline-block mb-4">
+                                <i class="bi bi-check-lg text-white display-4"></i>
+                            </div>
+                            <h3 class="text-success mb-3">¡Gracias por tu mensaje!</h3>
+                            <p class="text-muted mb-4">Nos pondremos en contacto contigo muy pronto.</p>
+                            <a href="{% url 'contact-page' %}" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-left me-2"></i>Enviar otro mensaje
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de Contacto -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-lg h-100">
+                    <div class="card-header bg-success text-white text-center py-4">
+                        <h3 class="mb-0">
+                            <i class="bi bi-info-circle me-2"></i>Información de Contacto
+                        </h3>
+                    </div>
+                    <div class="card-body p-4">
+                        
+                        <!-- Horarios -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">
+                                <i class="bi bi-clock text-primary me-2"></i>Horarios de Atención
+                            </h5>
+                            <div class="bg-light rounded p-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Lunes - Viernes:</span>
+                                    <span class="fw-bold">9:00 - 18:00</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Sábados:</span>
+                                    <span class="fw-bold">9:00 - 14:00</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Domingos:</span>
+                                    <span class="text-muted">Cerrado</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Datos de Contacto -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">
+                                <i class="bi bi-telephone text-success me-2"></i>Datos de Contacto
+                            </h5>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary rounded-circle p-2 me-3">
+                                    <i class="bi bi-envelope text-white"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Email</small><br>
+                                    <a href="mailto:contacto@ferremax.cl" class="text-decoration-none">contacto@ferremax.cl</a>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-success rounded-circle p-2 me-3">
+                                    <i class="bi bi-telephone text-white"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Teléfono</small><br>
+                                    <a href="tel:+56223456789" class="text-decoration-none">+56 2 2345 6789</a>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-info rounded-circle p-2 me-3">
+                                    <i class="bi bi-whatsapp text-white"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted">WhatsApp</small><br>
+                                    <a href="https://wa.me/56987654321" class="text-decoration-none">+56 9 8765 4321</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tiempo de Respuesta -->
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Tiempo de respuesta:</strong> Respondemos dentro de las próximas 24 horas hábiles.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sucursales Section -->
+        <section id="sucursales" class="mt-5 pt-5">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold" style="color: #5A3E2B;">
+                    <i class="bi bi-geo-alt-fill me-3"></i>Nuestras Sucursales
+                </h2>
+                <p class="text-muted">Visítanos en cualquiera de nuestras ubicaciones</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Sucursal 1 -->
+                <div class="col-lg-6">
+                    <div class="card h-100 border-0 shadow-lg">
+                        <div class="row g-0 h-100">
+                            <div class="col-md-5">
+                                <img src="{% static 'images/Sucursales/sucursal1.jpeg' %}" 
+                                     class="img-fluid h-100 object-fit-cover rounded-start" 
+                                     alt="Sucursal Central Santiago">
+                            </div>
+                            <div class="col-md-7">
+                                <div class="card-body h-100 d-flex flex-column">
+                                    <h5 class="card-title fw-bold text-primary">
+                                        <i class="bi bi-building me-2"></i>Sucursal Central Santiago
+                                    </h5>
+                                    <div class="flex-grow-1">
+                                        <p class="mb-2">
+                                            <i class="bi bi-geo-alt text-danger me-2"></i>
+                                            <strong>Dirección:</strong><br>
+                                            <small>Av. Libertador Bernardo O'Higgins 2450, Santiago Centro</small>
+                                        </p>
+                                        <p class="mb-2">
+                                            <i class="bi bi-telephone text-success me-2"></i>
+                                            <strong>Teléfono:</strong><br>
+                                            <small>+56 2 2987 1234</small>
+                                        </p>
+                                        <p class="mb-3">
+                                            <i class="bi bi-clock text-info me-2"></i>
+                                            <strong>Horario:</strong><br>
+                                            <small>Lunes a Sábado, 9:00 - 18:00</small>
+                                        </p>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a href="mailto:santiago@ferremax.cl" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-envelope me-1"></i>Email
+                                        </a>
+                                        <a href="tel:+56229871234" class="btn btn-outline-success btn-sm">
+                                            <i class="bi bi-telephone me-1"></i>Llamar
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sucursal 2 -->
+                <div class="col-lg-6">
+                    <div class="card h-100 border-0 shadow-lg">
+                        <div class="row g-0 h-100">
+                            <div class="col-md-5">
+                                <img src="{% static 'images/Sucursales/sucursal2.jpeg' %}" 
+                                     class="img-fluid h-100 object-fit-cover rounded-start" 
+                                     alt="Sucursal Maipú">
+                            </div>
+                            <div class="col-md-7">
+                                <div class="card-body h-100 d-flex flex-column">
+                                    <h5 class="card-title fw-bold text-primary">
+                                        <i class="bi bi-building me-2"></i>Sucursal Maipú
+                                    </h5>
+                                    <div class="flex-grow-1">
+                                        <p class="mb-2">
+                                            <i class="bi bi-geo-alt text-danger me-2"></i>
+                                            <strong>Dirección:</strong><br>
+                                            <small>Camino a Melipilla 12345, Maipú, Santiago</small>
+                                        </p>
+                                        <p class="mb-2">
+                                            <i class="bi bi-telephone text-success me-2"></i>
+                                            <strong>Teléfono:</strong><br>
+                                            <small>+56 2 2345 6789</small>
+                                        </p>
+                                        <p class="mb-3">
+                                            <i class="bi bi-clock text-info me-2"></i>
+                                            <strong>Horario:</strong><br>
+                                            <small>Lunes a Sábado, 9:00 - 18:00</small>
+                                        </p>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a href="mailto:maipu@ferremax.cl" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-envelope me-1"></i>Email
+                                        </a>
+                                        <a href="tel:+56223456789" class="btn btn-outline-success btn-sm">
+                                            <i class="bi bi-telephone me-1"></i>Llamar
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="text-center py-5 mt-5" style="background: linear-gradient(135deg, #F2E8D5 0%, #E8D5C4 100%); border-radius: 15px;">
+            <div class="container">
+                <h3 class="fw-bold mb-3" style="color: #5A3E2B;">¿Necesitas ayuda inmediata?</h3>
+                <p class="lead mb-4" style="color: #5A3E2B;">Nuestro equipo está listo para atenderte</p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="tel:+56223456789" class="btn btn-primary btn-lg px-4">
+                        <i class="bi bi-telephone me-2"></i>Llamar Ahora
+                    </a>
+                    <a href="https://wa.me/56987654321" class="btn btn-success btn-lg px-4">
+                        <i class="bi bi-whatsapp me-2"></i>WhatsApp
+                    </a>
+                    <a href="{% url 'products-page' %}" class="btn btn-outline-primary btn-lg px-4">
+                        <i class="bi bi-shop me-2"></i>Ver Productos
+                    </a>
+                </div>
+            </div>
+        </section>
+
     </div>
-  </div>
 </section>
+
 {% endblock %}
