@@ -1,3 +1,31 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: "Helvetica Neue", sans-serif;
+    background-color: #F8F9FA; 
+    color: #333333; 
+    height: 100%;
+  }
+  
+  .login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .login-box {
+    margin-bottom: 200px;
+    background-color: #F2E8D5; 
+    padding: 40px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(#D8C3A5);
+    border: solid 0.5px #D8C3A5;
+    
+  }
 label {
     display: block;
     text-align: left;

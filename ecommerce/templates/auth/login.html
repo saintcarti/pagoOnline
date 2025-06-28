@@ -1,30 +1,38 @@
+{%extends 'base.html'%}
 {%load static%}
+{%block content%}
 
 <link rel="stylesheet" href="{%static 'css/login.css'%}">
 
-<form method="POST" action="">
-    {% csrf_token %}
-    <h5 style="color: #5A3E2B;">Inicio de sesión</h5>
+<div class="login-container">
+    <div class="login-box">
+    
+        <form method="POST" action="">
+            {% csrf_token %}
+            <h5 style="color: #5A3E2B;">Inicio de sesión</h5>
 
-    <div>
-        <label style="color: #5A3E2B;" for="inputUsername" class="form-label">Nombre de usuario:</label>
-        <input type="text" name="username" id="inputUsername" class="form-control" aria-describedby="UsernameError" value="{{ request.POST.username }}">
+            <div>
+                <label style="color: #5A3E2B;" for="inputUsername" class="form-label">Nombre de usuario:</label>
+                <input type="text" name="username" id="inputUsername" class="form-control" aria-describedby="UsernameError" value="{{ request.POST.username }}">
+            </div>
+
+            <div>
+                <label style="color: #5A3E2B;" for="inputPassword" class="form-label">Contraseña:</label>
+                <input type="password" name="password" id="inputPassword" class="form-control" aria-describedby="passwordError">
+            </div>
+
+            {% if error %}
+                <div style="color: red; margin-top: 10px;">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <div style="margin-top: 35px;">
+                <button type="submit" class="btn btn-dark" style="border-radius: 12px; padding: 8px 30px; border: 1px solid black;">Entrar</button>
+
+                <p style="margin-top: 15px; color: #5A3E2B;">¿Aún no tienes tu cuenta? <a href="{%url 'register-page'%}">Regístrate</a></p>
+            </div>
+        </form>
     </div>
-
-    <div>
-        <label style="color: #5A3E2B;" for="inputPassword" class="form-label">Contraseña:</label>
-        <input type="password" name="password" id="inputPassword" class="form-control" aria-describedby="passwordError">
-    </div>
-
-    {% if error %}
-        <div style="color: red; margin-top: 10px;">
-            {{ error }}
-        </div>
-    {% endif %}
-
-    <div style="margin-top: 35px;">
-        <button type="submit" class="btn btn-dark" style="border-radius: 12px; padding: 8px 30px; border: 1px solid black;">Entrar</button>
-
-        <p style="margin-top: 15px; color: #5A3E2B;">¿Aún no tienes tu cuenta? <a href="{%url 'register-page'%}">Regístrate</a></p>
-    </div>
-</form>
+</div>
+{%endblock%}

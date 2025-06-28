@@ -20,3 +20,13 @@ def products(request):
     product = Product.objects.all()
 
     return render(request,'ecommerce/products.html',{"products":product})
+
+def about(request):
+    return render(request,'ecommerce/about.html')
+
+def contact(request):
+    return render(request,'ecommerce/contact.html')
+
+
+def dashboard(request):
+    return render(request,'dashboard-panel/dashboard.html')

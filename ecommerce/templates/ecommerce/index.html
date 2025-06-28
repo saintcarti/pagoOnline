@@ -1,7 +1,27 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block content %}
+
+<link rel="stylesheet" href="{%static 'css/index.css'%}">
+
+
+<div class="container mt-4">
+  <div class="p-4 rounded shadow-sm" style="border-radius: 15px; background-color: #ffffff; box-shadow: 1 1 32px rgba(0, 0, 0, 0.9); text-align: center;">
+    <div>
+      <strong>FERREMAS</strong> es una empresa chilena dedicada a la venta de artículos de ferretería, herramientas y materiales para la construcción, que se ha consolidado como una de las marcas más confiables del rubro gracias a la calidad de sus productos y su compromiso con el cliente. Con el lanzamiento de su nueva plataforma de comercio electrónico, FERREMAS busca facilitar el acceso a su amplio catálogo de productos, permitiendo que clientes de todo el país puedan cotizar y comprar desde la comodidad de su hogar o lugar de trabajo.
+    </div>
+    <br>
+    <div>
+      Lo que diferencia a FERREMAS de otras ferreterías es su compromiso con la calidad, ya que trabaja únicamente con marcas reconocidas y productos duraderos. Además, la compañía se destaca por su atención personalizada, su enfoque en las necesidades reales del cliente, y su disponibilidad constante de stock, lo que permite entregar soluciones rápidas, tanto para proyectos del hogar como para obras de mayor envergadura.
+    </div>
+    <br>
+    <div>
+      Gracias a esta nueva plataforma web, FERREMAS se posiciona como una opción más moderna, rápida y eficiente dentro del competitivo mercado ferretero chileno, llevando sus productos a todo el país con solo unos clics.
+    </div>
+  </div>
+</div>
+<div class="mb-4 d-flex justify-content-center">
+
 <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel" style="margin-top: 50px;">
   <div class="carousel-inner">
     {% for producto in products %}
@@ -26,5 +46,6 @@
     <span class="carousel-control-next-icon" aria-hidden="true"></span>
     <span class="visually-hidden">Siguiente</span>
   </button>
+</div>
 </div>
 {% endblock %}
