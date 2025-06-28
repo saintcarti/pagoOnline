@@ -4,6 +4,7 @@ from miPaypal.forms import ProductForm, CustomUserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login as auth_login, logout
 from django.contrib import messages
+from miPaypal.decorators import admin_required, role_required
 
 # Create your views here.
 def index(request):
@@ -63,20 +64,19 @@ def about(request):
 def contact(request):
     return render(request,'ecommerce/contact.html')
 
-def logout(request):
-    pass
-
+@admin_required
 def admin_settings(request):
     return render(request,'dashboard-panel/profile/admin-settings.html')
 
+@admin_required
 def admin_profile(request):
     return render(request,'dashboard-panel/profile/admin-profile.html')
 
-
+@admin_required
 def dashboard(request):
     return render(request,'dashboard-panel/dashboard.html')
 
-@login_required
+@admin_required
 def list_products(request):
     products = Product.objects.all()
     return render(request, 'dashboard-panel/crud-products/list-product.html', {
@@ -84,7 +84,7 @@ def list_products(request):
     })
 
 
-@login_required
+@admin_required
 def crear_pview(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -99,6 +99,7 @@ def crear_pview(request):
 
     return render(request, 'dashboard-panel/crud-products/create-product.html')
 
+@admin_required
 def update_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     
@@ -114,62 +115,3 @@ def update_product(request, pk):
         'form': form,
         'product': product
     })
-
-@login_required
-def list_products(request):
-    products = Product.objects.all()
-    return render(request, 'dashboard-panel/crud-products/list-product.html', {
-        "products": products
-    })
-
-@login_required
-def crear_pview(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        price = request.POST.get('price')
-        description = request.POST.get('description')
-        image = request.FILES.get('image')
-
-        product = Product(name=name, price=price, description=description, image=image)
-        product.save()
-
-        return redirect('list-products')
-
-    return render(request, 'dashboard-panel/crud-products/create-product.html')
-
-def update_product(request, pk):
-    product = get_object_or_404(Product, pk=pk)
-    
-    if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES, instance=product)
-        if form.is_valid():
-            form.save()
-            return redirect('list-products')
-    else:
-        form = ProductForm(instance=product)
-    
-    return render(request, 'dashboard-panel/crud-products/update-product.html', {
-        'form': form,
-        'product': product
-    })
-def about(request):
-    return render(request,'ecommerce/about.html')
-
-def contact(request):
-    return render(request,'ecommerce/contact.html')
-
-
-def dashboard(request):
-    return render(request,'dashboard-panel/dashboard.html')
-
-def admin_required(view_func=None, redirect_url='index-page'):
-    """
-    Decorador que verifica si el usuario está autenticado y es staff/admin
-    """
-    actual_decorator = user_passes_test(
-        lambda u: u.is_authenticated and u.is_staff,
-        login_url=redirect_url
-    )
-    if view_func:
-        return actual_decorator(view_func)
-    return actual_decorator

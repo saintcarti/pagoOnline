@@ -11,7 +11,6 @@ urlpatterns = [
     ##Auth urls
     path('login/',login,name='login-page'),
     path('register/',register,name='register-page'),
-    path('logout/',logout,name='logout-fun'),
     ##Panel administracion urls
     path('dashboard-panel/',dashboard,name='dashboard-panel-page'),
     path('admin-settings/',admin_settings,name='admin-settings-page'),
@@ -20,5 +19,5 @@ urlpatterns = [
     path('list-products/', list_products, name='list-products'),
     path('create-product/', crear_pview, name='create-product'),
     path('update-product/<int:pk>/', update_product, name='update-product'),
-    path('logout/', custom_logout, name='logout'),
+    path('logout/', custom_logout, name='logout-fun'),
 ]

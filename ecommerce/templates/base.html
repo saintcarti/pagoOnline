@@ -70,7 +70,7 @@
               {% if user.is_staff %}<li><a class="dropdown-item" href="#">Panel Admin</a></li>{% endif %}
               <li><hr class="dropdown-divider"></li>
               <li>
-                  <form method="post" action="{% url 'logout' %}">
+                  <form method="post" action="{% url 'logout-fun' %}">
                     {% csrf_token %}
                     <button type="submit" class="dropdown-item">Cerrar Sesión</button>
                   </form>
