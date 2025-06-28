@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from miPaypal.models import Product
-from miPaypal.forms import ProductForm, CustomUserCreationForm
+from miPaypal.models import Product, CustomUser
+from miPaypal.forms import ProductForm, CustomUserCreationForm, StaffRegistrationForm,UserEditForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login as auth_login, logout
 from django.contrib import messages
-from miPaypal.decorators import admin_required, role_required
+from miPaypal.decorators import admin_required
+from django.core.paginator import Paginator
+from django.db.models import Q 
 
 # Create your views here.
 def index(request):
@@ -172,3 +174,75 @@ def update_product(request, pk):
         'form': form,
         'product': product
     })
+
+@admin_required
+def staff_register(request):
+    """Vista para registrar nuevos usuarios (solo admin)"""
+    if request.method == 'POST':
+        form = StaffRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, f'Usuario {user.username} creado exitosamente!')
+            return redirect('list-user')  # Cambiado a 'list-user' para consistencia
+    else:
+        form = StaffRegistrationForm()
+    
+    return render(request, 'dashboard-panel/crud-users/create-user.html', {'form': form})
+
+@admin_required
+def list_user(request):
+    """Vista unificada para listar usuarios con filtros y paginación"""
+    role_filter = request.GET.get('role')
+    search_query = request.GET.get('search')
+    page_number = request.GET.get('page')
+    
+    users = CustomUser.objects.all().order_by('-date_joined')
+    
+    # Aplicar filtros
+    if role_filter:
+        users = users.filter(rol=role_filter)
+    
+    if search_query:
+        users = users.filter(
+            Q(username__icontains=search_query) | 
+            Q(email__icontains=search_query) |
+            Q(rut__icontains=search_query)
+        )
+    
+    # Paginación
+    paginator = Paginator(users, 10)
+    page_obj = paginator.get_page(page_number)
+    
+    # Pasar los roles definidos en el modelo al template
+    return render(request, 'dashboard-panel/crud-users/list-user.html', {
+        'page_obj': page_obj,
+        'current_role': role_filter,
+        'search_query': search_query or '',
+        'user_roles': CustomUser.ROLES  # Esto es lo que necesitas añadir
+    })
+
+@admin_required
+def delete_user(request, user_id):
+    """Vista para eliminar usuarios"""
+    user = get_object_or_404(CustomUser, id=user_id)
+    if request.method == 'POST':
+        username = user.username
+        user.delete()
+        messages.success(request, f'Usuario {username} eliminado correctamente')
+        return redirect('list-user')  # Cambiado a 'list-user' para consistencia
+    return render(request, 'dashboard-panel/crud-users/confirm-delete.html', {'user': user})
+
+@admin_required
+def edit_user(request, user_id):
+    """Vista para editar usuarios existentes"""
+    user = get_object_or_404(CustomUser, id=user_id)
+    if request.method == 'POST':
+        form = UserEditForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Usuario actualizado correctamente')
+            return redirect('list-user')  # Cambiado a 'list-user' para consistencia
+    else:
+        form = UserEditForm(instance=user)
+    
+    return render(request, 'dashboard-panel/crud-users/edit-user.html', {'form': form})

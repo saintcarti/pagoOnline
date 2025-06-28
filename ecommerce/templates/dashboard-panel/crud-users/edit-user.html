@@ -3,7 +3,6 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Registro de Personal</h2>
     <style>
   .main-content {
     margin-left: 280px; /* Igual al ancho del sidebar */
@@ -29,6 +28,9 @@
   }
 </style>
     <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>Editar Usuario</h4>
+        </div>
         <div class="card-body">
             <form method="POST">
                 {% csrf_token %}
@@ -43,9 +45,10 @@
                     </div>
                     {% endfor %}
                 </div>
-                <button type="submit" class="btn btn-primary">Registrar</button>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                <a href="{% url 'list-user' %}" class="btn btn-secondary">Cancelar</a>
             </form>
-        </div>  
+        </div>
     </div>
 </div>
 {% endblock %}
