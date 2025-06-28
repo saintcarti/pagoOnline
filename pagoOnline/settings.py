@@ -30,6 +30,7 @@ CSRF_TRUSTED_ORIGINS = ['https://3f8c-200-86-235-234.ngrok-free.app']
 
 
 # Application definition
+AUTH_USER_MODEL = 'miPaypal.CustomUser'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -38,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'miPaypal.apps.MipaypalConfig',
+    'miPaypal.apps.MiPaypalConfig',
     'paypal.standard.ipn',
     'ecommerce',
 ]
@@ -127,3 +128,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 PAYPAL_TEST=True
 
 PAYPAL_RECEIVER_EMAIL = 'sb-kdseq44191791@business.example.com'
+
+LOGOUT_REDIRECT_URL = '/'

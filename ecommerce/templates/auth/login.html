@@ -7,7 +7,7 @@
 <div class="login-container">
     <div class="login-box">
     
-        <form method="POST" action="">
+        <form method="POST" action="{% url 'login-page' %}">
             {% csrf_token %}
             <h5 style="color: #5A3E2B;">Inicio de sesión</h5>
 
