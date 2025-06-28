@@ -6,7 +6,7 @@
   <h2 class="mb-4">Administración de Productos</h2>
   
   <div class="mb-4">
-    <a href="" class="btn btn-success">Crear Nuevo Producto</a>
+    <a href="{% url 'create-product' %}" class="btn btn-success">Crear Nuevo Producto</a>
   </div>
 
   <div class="table-responsive">
@@ -28,7 +28,7 @@
             <td>{{ product.name }}</td>
             <td>${{ product.price }}</td>
             <td>
-              <a href="" class="btn btn-sm btn-primary">Editar</a>
+              <a href="{% url 'update-product' product.pk %}" class="btn btn-sm btn-primary">Editar</a>
               <form method="POST" action="" style="display: inline;">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
