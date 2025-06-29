@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block title %}Detalle de Transacción {{ order.order_number }} - Ferremas{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); min-height: 100vh; padding: 2rem 0;">
+    
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1" style="color: #5A3E2B;">
+                        <i class="fas fa-file-invoice me-2"></i>Detalle de Transacción
+                    </h1>
+                    <p class="text-muted mb-0">Orden #{{ order.order_number }}</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'historial-transacciones-contador' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Volver al Historial
+                    </a>
+                    <button class="btn btn-primary" onclick="window.print()">
+                        <i class="fas fa-print me-1"></i>Imprimir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información Principal -->
+        <div class="col-lg-8 mb-4">
+            <!-- Resumen de la Orden -->
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+                <div class="card-header bg-transparent border-0 py-3">
+                    <h5 class="mb-0" style="color: #5A3E2B;">
+                        <i class="fas fa-shopping-cart me-2"></i>Información de la Orden
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Número de Orden</label>
+                                <div class="fw-bold text-primary fs-5">{{ order.order_number }}</div>
+                            </div>
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Estado de la Orden</label>
+                                <div>
+                                    <span class="badge bg-{% if order.order_status == 'delivered' %}success{% elif order.order_status == 'shipped' %}info{% elif order.order_status == 'confirmed' %}warning{% elif order.order_status == 'cancelled' %}danger{% else %}secondary{% endif %} fs-6">
+                                        {{ order.get_order_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Estado del Pago</label>
+                                <div>
+                                    <span class="badge bg-{% if order.payment_status == 'completed' %}success{% elif order.payment_status == 'pending' %}warning{% elif order.payment_status == 'failed' %}danger{% else %}secondary{% endif %} fs-6">
+                                        {{ order.get_payment_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Fecha de Creación</label>
+                                <div class="fw-semibold">{{ order.created_at|date:"d/m/Y H:i" }}</div>
+                            </div>
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Última Actualización</label>
+                                <div class="fw-semibold">{{ order.updated_at|date:"d/m/Y H:i" }}</div>
+                            </div>
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Método de Pago</label>
+                                <div class="fw-semibold">{{ order.payment_method|default:"No especificado" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productos Comprados -->
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-header bg-transparent border-0 py-3">
+                    <h5 class="mb-0" style="color: #5A3E2B;">
+                        <i class="fas fa-box me-2"></i>Productos Comprados
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unitario</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order_items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if item.product.image %}
+                                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" 
+                                                     class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="rounded me-3 d-flex align-items-center justify-content-center bg-light" 
+                                                     style="width: 60px; height: 60px;">
+                                                    <i class="fas fa-image text-muted"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-semibold">{{ item.product.name }}</div>
+                                                <small class="text-muted">SKU: {{ item.product.id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">{{ item.quantity }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-success">${{ item.price|floatformat:2 }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">${{ item.quantity|multiply:item.price|floatformat:2 }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <th colspan="3" class="text-end">Total de Productos:</th>
+                                    <th>{{ total_items }}</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="3" class="text-end">Subtotal:</th>
+                                    <th class="text-success">${{ subtotal|floatformat:2 }}</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="3" class="text-end fs-5">TOTAL:</th>
+                                    <th class="text-success fs-5">${{ order.total_amount|floatformat:2 }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Lateral -->
+        <div class="col-lg-4">
+            <!-- Información del Cliente -->
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+                <div class="card-header bg-transparent border-0 py-3">
+                    <h6 class="mb-0" style="color: #5A3E2B;">
+                        <i class="fas fa-user me-2"></i>Información del Cliente
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center me-3" 
+                             style="width: 50px; height: 50px; background: linear-gradient(135deg, #5A3E2B, #4a3426);">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold">{{ customer.get_full_name|default:customer.username }}</div>
+                            <small class="text-muted">Cliente</small>
+                        </div>
+                    </div>
+                    
+                    <div class="info-group">
+                        <div class="info-item mb-2">
+                            <i class="fas fa-envelope text-muted me-2"></i>
+                            <span>{{ customer.email }}</span>
+                        </div>
+                        
+                        {% if customer.phone %}
+                        <div class="info-item mb-2">
+                            <i class="fas fa-phone text-muted me-2"></i>
+                            <span>{{ customer.phone }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if customer.ciudad %}
+                        <div class="info-item mb-2">
+                            <i class="fas fa-map-marker-alt text-muted me-2"></i>
+                            <span>{{ customer.ciudad }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="info-item mb-2">
+                            <i class="fas fa-calendar text-muted me-2"></i>
+                            <span>Cliente desde {{ customer.date_joined|date:"m/Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen Financiero -->
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+                <div class="card-header bg-transparent border-0 py-3">
+                    <h6 class="mb-0" style="color: #5A3E2B;">
+                        <i class="fas fa-calculator me-2"></i>Resumen Financiero
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Subtotal:</span>
+                        <span class="fw-semibold">${{ subtotal|floatformat:2 }}</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Envío:</span>
+                        <span class="fw-semibold">$0.00</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Descuentos:</span>
+                        <span class="fw-semibold">$0.00</span>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-dark">Total:</span>
+                        <span class="fw-bold text-success fs-5">${{ order.total_amount|floatformat:2 }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones Rápidas -->
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-header bg-transparent border-0 py-3">
+                    <h6 class="mb-0" style="color: #5A3E2B;">
+                        <i class="fas fa-tools me-2"></i>Acciones Rápidas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if order.order_status == 'shipped' and order.payment_status == 'completed' %}
+                            <a href="{% url 'marcar-orden-entregada' order.id %}" 
+                               class="btn btn-success"
+                               onclick="return confirm('¿Confirmar que esta orden ha sido entregada?')">
+                                <i class="fas fa-check me-1"></i>Marcar como Entregada
+                            </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'order-detail-admin' order.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit me-1"></i>Editar Orden
+                        </a>
+                        
+                        <button class="btn btn-outline-secondary" onclick="window.print()">
+                            <i class="fas fa-print me-1"></i>Imprimir Detalle
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-1px);
+}
+
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #5A3E2B;
+}
+
+.badge {
+    font-weight: 500;
+}
+
+.info-item label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-group .info-item {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0;
+}
+
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 1rem 0;
+    }
+    
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+}
+
+@media print {
+    .btn, .d-flex.gap-2 {
+        display: none !important;
+    }
+    
+    .container-fluid {
+        background: white !important;
+        padding: 0 !important;
+    }
+    
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+
+{% endblock %}

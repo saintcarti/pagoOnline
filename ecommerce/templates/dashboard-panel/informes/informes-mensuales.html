@@ -1,0 +1,346 @@
+{% extends 'dashboard-panel/dashboard.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block title %}Informes Mensuales{% endblock %}
+
+{% block extra_css %}
+<style>
+.stats-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.stats-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.filter-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.btn-pdf {
+    background: linear-gradient(45deg, #dc3545, #bd2130);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-pdf:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.products-table {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.daily-sales-chart {
+    height: 300px;
+    overflow-x: auto;
+}
+
+.sales-bar {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+    text-align: center;
+    margin: 2px;
+    padding: 5px;
+    border-radius: 3px;
+    min-height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="bi bi-graph-up me-2"></i>Informes Mensuales
+            </h1>
+            <p class="text-muted">Genera y visualiza informes detallados de ventas por mes</p>
+        </div>
+        
+        <a href="{% url 'generar-informe-pdf' %}?año={{ año_seleccionado }}&mes={{ mes_seleccionado }}" 
+           class="btn-pdf">
+            <i class="bi bi-file-earmark-pdf"></i>
+            Descargar PDF
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-card">
+        <h5 class="mb-3">
+            <i class="bi bi-funnel me-2"></i>Seleccionar Período
+        </h5>
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="año" class="form-label">Año</label>
+                <select name="año" id="año" class="form-select">
+                    {% for año in años_disponibles %}
+                        <option value="{{ año }}" {% if año == año_seleccionado %}selected{% endif %}>
+                            {{ año }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="mes" class="form-label">Mes</label>
+                <select name="mes" id="mes" class="form-select">
+                    {% for numero, nombre in meses_disponibles %}
+                        <option value="{{ numero }}" {% if numero == mes_seleccionado %}selected{% endif %}>
+                            {{ nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-2"></i>Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Estadísticas principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ total_ordenes|floatformat:0 }}</div>
+                <div class="stats-label">Total Órdenes</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                <div class="stats-number">{{ ordenes_completadas|floatformat:0 }}</div>
+                <div class="stats-label">Órdenes Completadas</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);">
+                <div class="stats-number">${{ ventas_totales|floatformat:2 }}</div>
+                <div class="stats-label">Ventas Totales</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card" style="background: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);">
+                <div class="stats-number">${{ promedio_orden|floatformat:2 }}</div>
+                <div class="stats-label">Promedio por Orden</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Título del período actual -->
+    <div class="alert alert-info">
+        <h5 class="mb-0">
+            <i class="bi bi-calendar-event me-2"></i>
+            Mostrando datos de: {{ mes_nombre }} {{ año_seleccionado }}
+            <small class="text-muted">({{ primer_dia_mes|date:"d/m/Y" }} - {{ ultimo_dia_mes|date:"d/m/Y" }})</small>
+        </h5>
+    </div>
+
+    <div class="row">
+        <!-- Gráfico de ventas diarias -->
+        <div class="col-md-8">
+            <div class="chart-container">
+                <h5 class="mb-3">
+                    <i class="bi bi-graph-up me-2"></i>Ventas Diarias
+                </h5>
+                <div class="daily-sales-chart">
+                    <canvas id="salesChart" width="600" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumen rápido -->
+        <div class="col-md-4">
+            <div class="chart-container">
+                <h5 class="mb-3">
+                    <i class="bi bi-info-circle me-2"></i>Resumen del Mes
+                </h5>
+                <div class="mb-3">
+                    <strong>Mejor día de ventas:</strong><br>
+                    {% if ventas_diarias %}
+                        {% for venta in ventas_diarias %}
+                            {% if forloop.first %}
+                                {{ venta.fecha|date:"d/m" }} - ${{ venta.ventas|floatformat:2 }}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        Sin datos
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Tasa de conversión:</strong><br>
+                    {% if total_ordenes > 0 %}
+                        {{ ordenes_completadas|percentage:total_ordenes|floatformat:1 }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Total de productos vendidos:</strong><br>
+                    {% for producto in productos_top %}
+                        {% if forloop.first %}
+                            {{ producto.cantidad_vendida|floatformat:0 }} unidades
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top productos vendidos -->
+    {% if productos_top %}
+    <div class="products-table">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th colspan="4" class="text-center">
+                            <i class="bi bi-star me-2"></i>Top 10 Productos Más Vendidos
+                        </th>
+                    </tr>
+                    <tr>
+                        <th>Producto</th>
+                        <th class="text-center">Cantidad Vendida</th>
+                        <th class="text-center">Precio Unitario</th>
+                        <th class="text-center">Ingresos Totales</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos_top %}
+                    <tr>
+                        <td>
+                            <strong>{{ producto.product__name }}</strong>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-primary">{{ producto.cantidad_vendida|floatformat:0 }}</span>
+                        </td>
+                        <td class="text-center">
+                            ${{ producto.product__price|floatformat:2 }}
+                        </td>
+                        <td class="text-center">
+                            <strong class="text-success">${{ producto.ingresos|floatformat:2 }}</strong>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        No hay datos de productos vendidos para el período seleccionado.
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Configurar gráfico de ventas diarias
+const ctx = document.getElementById('salesChart').getContext('2d');
+const salesData = [
+    {% for venta in ventas_diarias %}
+        {{ venta.ventas|default:0 }}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+const labels = [
+    {% for venta in ventas_diarias %}
+        '{{ venta.dia }}'{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+const salesChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Ventas ($)',
+            data: salesData,
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.1,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value, index, values) {
+                        return '$' + value.toLocaleString();
+                    }
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top'
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return 'Ventas: $' + context.parsed.y.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Helper para división en templates
+document.addEventListener('DOMContentLoaded', function() {
+    // Código adicional si es necesario
+});
+</script>
+{% endblock %}

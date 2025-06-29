@@ -344,3 +344,125 @@ class OrderItemForm(forms.ModelForm):
         # Filtrar solo productos con stock disponible
         self.fields['product'].queryset = Product.objects.filter(stock__gt=0).order_by('name')
         self.fields['product'].empty_label = "Seleccionar producto..."
+
+class DeliveryInfoForm(forms.Form):
+    """Formulario para seleccionar método de entrega e información de envío"""
+    
+    DELIVERY_METHOD_CHOICES = [
+        ('pickup', 'Retiro en Tienda - GRATIS'),
+        ('delivery', 'Delivery a Domicilio - $3.000'),
+    ]
+    
+    delivery_method = forms.ChoiceField(
+        choices=DELIVERY_METHOD_CHOICES,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
+        label="Método de entrega",
+        initial='pickup'
+    )
+    
+    # Campos para delivery
+    shipping_address = forms.CharField(
+        max_length=500,
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ingresa tu dirección completa...',
+            'rows': 3,
+            'id': 'shipping_address'
+        }),
+        label="Dirección de entrega"
+    )
+    
+    shipping_city = forms.CharField(
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ciudad',
+            'id': 'shipping_city'
+        }),
+        label="Ciudad"
+    )
+    
+    shipping_phone = forms.CharField(
+        max_length=15,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '+56 9 1234 5678',
+            'id': 'shipping_phone'
+        }),
+        label="Teléfono de contacto"
+    )
+    
+    # Campos para retiro en tienda
+    pickup_store = forms.ChoiceField(
+        choices=[
+            ('main_store', 'Tienda Principal - Av. Providencia 1234'),
+            ('mall_store', 'Sucursal Mall - Centro Comercial Plaza'),
+            ('norte_store', 'Sucursal Norte - Av. Independencia 567'),
+        ],
+        required=False,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
+        label="Selecciona la tienda",
+        initial='main_store'
+    )
+    
+    pickup_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date',
+            'id': 'pickup_date'
+        }),
+        label="Fecha preferida de retiro"
+    )
+    
+    pickup_time = forms.ChoiceField(
+        choices=[
+            ('morning', 'Mañana (9:00 - 13:00)'),
+            ('afternoon', 'Tarde (14:00 - 18:00)'),
+            ('evening', 'Noche (19:00 - 21:00)'),
+        ],
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label="Horario preferido",
+        initial='morning'
+    )
+    
+    special_instructions = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'placeholder': 'Instrucciones especiales (opcional)...',
+            'rows': 2,
+            'id': 'special_instructions'
+        }),
+        label="Instrucciones especiales"
+    )
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        delivery_method = cleaned_data.get('delivery_method')
+        
+        if delivery_method == 'delivery':
+            # Validar campos obligatorios para delivery
+            if not cleaned_data.get('shipping_address'):
+                self.add_error('shipping_address', 'La dirección es obligatoria para delivery.')
+            if not cleaned_data.get('shipping_city'):
+                self.add_error('shipping_city', 'La ciudad es obligatoria para delivery.')
+            if not cleaned_data.get('shipping_phone'):
+                self.add_error('shipping_phone', 'El teléfono es obligatorio para delivery.')
+        
+        elif delivery_method == 'pickup':
+            # Validar campos obligatorios para retiro
+            if not cleaned_data.get('pickup_store'):
+                self.add_error('pickup_store', 'Debes seleccionar una tienda para el retiro.')
+        
+        return cleaned_data
+    
+    def get_delivery_cost(self):
+        """Retorna el costo de delivery según el método seleccionado"""
+        if self.cleaned_data.get('delivery_method') == 'delivery':
+            return 3000  # $3.000 por delivery
+        return 0  # Gratis para retiro en tienda

@@ -12,6 +12,7 @@ from django.http import JsonResponse
 from decimal import Decimal
 import random
 import string
+from django.views.decorators.http import require_http_methods
 
 
 def get_or_create_cart(request):
@@ -87,10 +88,20 @@ def checkout(request):
     total = sum(item.total_price() for item in cart_items)
     item_names = ", ".join([item.product.name for item in cart_items])
     
+    # Obtener información de entrega desde la sesión o crear nueva
+    delivery_info = request.session.get('delivery_info', {
+        'delivery_method': 'pickup',
+        'delivery_cost': 0
+    })
+    
+    # Calcular total con costo de envío
+    delivery_cost = delivery_info.get('delivery_cost', 0)
+    total_with_delivery = total + delivery_cost
+    
     host = request.get_host()
     paypal_checkout = {
         'business': settings.PAYPAL_RECEIVER_EMAIL,
-        'amount': total,
+        'amount': total_with_delivery,
         'item_name': f"Compra de {item_names}",
         'invoice': uuid.uuid4(),
         'currency_code': 'USD',
@@ -105,6 +116,9 @@ def checkout(request):
     context = {
         'cart_items': cart_items,
         'total': total,
+        'delivery_cost': delivery_cost,
+        'total_with_delivery': total_with_delivery,
+        'delivery_info': delivery_info,
         'paypal': paypal_payment
     }
     return render(request, 'paypal/checkout.html', context)
@@ -114,6 +128,12 @@ def payment_successful(request):
     cart_items = cart.cartitem_set.all()
     
     if cart_items and request.user.is_authenticated:
+        # Obtener información de entrega de la sesión
+        delivery_info = request.session.get('delivery_info', {
+            'delivery_method': 'pickup',
+            'delivery_cost': 0
+        })
+        
         # Crear información de envío básica (se puede expandir con un formulario)
         shipping_info = {
             'address': getattr(request.user, 'direccion', 'Dirección no especificada'),
@@ -121,13 +141,17 @@ def payment_successful(request):
             'phone': getattr(request.user, 'telefono', 'Teléfono no especificado'),
         }
         
-        # Crear la orden
-        order = create_order_from_cart(request.user, cart, shipping_info)
+        # Crear la orden con información de entrega
+        order = create_order_from_cart(request.user, cart, shipping_info, delivery_info)
         
         if order:
             # Actualizar estado de pago como completado
             order.payment_status = 'completed'
             order.save()
+            
+            # Limpiar información de entrega de la sesión
+            if 'delivery_info' in request.session:
+                del request.session['delivery_info']
             
             context = {
                 'order': order,
@@ -139,6 +163,11 @@ def payment_successful(request):
         # Limpiar el carrito para usuarios no autenticados
         cart_items.delete()
         cart.delete()
+        
+        # Limpiar información de entrega de la sesión
+        if 'delivery_info' in request.session:
+            del request.session['delivery_info']
+            
         context = {'success_message': '¡Compra realizada exitosamente!'}
     
     return render(request, 'paypal/payment-success.html', context)
@@ -209,7 +238,7 @@ def generate_order_number():
     random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
     return f"ORD-{date_str}-{random_str}"
 
-def create_order_from_cart(user, cart, shipping_info):
+def create_order_from_cart(user, cart, shipping_info, delivery_info=None):
     """
     Crea una orden a partir del carrito de compras
     """
@@ -218,17 +247,48 @@ def create_order_from_cart(user, cart, shipping_info):
     if not cart_items:
         return None
     
-    # Calcular total
-    total_amount = sum(item.total_price() for item in cart_items)
+    # Calcular total de productos
+    subtotal = sum(item.total_price() for item in cart_items)
+    
+    # Obtener información de entrega
+    if delivery_info is None:
+        delivery_info = {
+            'delivery_method': 'pickup',
+            'delivery_cost': 0
+        }
+    
+    delivery_cost = Decimal(str(delivery_info.get('delivery_cost', 0)))
+    total_amount = Decimal(str(subtotal)) + delivery_cost
+    
+    # Preparar información de envío según el método
+    delivery_method = delivery_info.get('delivery_method', 'pickup')
+    if delivery_method == 'delivery':
+        shipping_address = delivery_info.get('shipping_address', '')
+        shipping_city = delivery_info.get('shipping_city', '')
+        shipping_phone = delivery_info.get('shipping_phone', '')
+    else:
+        # Para retiro en tienda
+        pickup_store = delivery_info.get('pickup_store', 'main_store')
+        store_addresses = {
+            'main_store': 'Tienda Principal - Av. Providencia 1234, Providencia',
+            'mall_store': 'Sucursal Mall - Centro Comercial Plaza, Local 234',
+            'norte_store': 'Sucursal Norte - Av. Independencia 567, Independencia',
+        }
+        shipping_address = f"RETIRO EN TIENDA: {store_addresses.get(pickup_store, 'Tienda Principal')}"
+        shipping_city = 'Santiago'
+        shipping_phone = user.phone if hasattr(user, 'phone') and user.phone else 'No especificado'
     
     # Crear la orden
     order = Order.objects.create(
         user=user,
         order_number=generate_order_number(),
-        total_amount=Decimal(str(total_amount)),
-        shipping_address=shipping_info.get('address', ''),
-        shipping_city=shipping_info.get('city', ''),
-        shipping_phone=shipping_info.get('phone', ''),
+        total_amount=total_amount,
+        delivery_method=delivery_method,
+        delivery_cost=delivery_cost,
+        shipping_address=shipping_address,
+        shipping_city=shipping_city,
+        shipping_phone=shipping_phone,
+        notes=delivery_info.get('special_instructions', ''),
     )
     
     # Crear los items de la orden
@@ -268,3 +328,54 @@ def order_detail(request, order_id):
         'order_items': order.items.all()
     }
     return render(request, 'profile/order-detail.html', context)
+
+@require_http_methods(["POST"])
+def update_delivery_info(request):
+    """Vista para actualizar información de entrega via AJAX"""
+    try:
+        delivery_method = request.POST.get('delivery_method', 'pickup')
+        delivery_cost = 0
+        
+        if delivery_method == 'delivery':
+            delivery_cost = 3000  # $3.000 por delivery
+        
+        # Guardar en la sesión
+        delivery_info = {
+            'delivery_method': delivery_method,
+            'delivery_cost': delivery_cost,
+        }
+        
+        # Agregar campos específicos según el método
+        if delivery_method == 'delivery':
+            delivery_info.update({
+                'shipping_address': request.POST.get('shipping_address', ''),
+                'shipping_city': request.POST.get('shipping_city', ''),
+                'shipping_phone': request.POST.get('shipping_phone', ''),
+            })
+        else:
+            delivery_info.update({
+                'pickup_store': request.POST.get('pickup_store', 'main_store'),
+            })
+        
+        delivery_info['special_instructions'] = request.POST.get('special_instructions', '')
+        
+        request.session['delivery_info'] = delivery_info
+        
+        # Calcular nuevo total
+        cart = get_or_create_cart(request)
+        cart_items = cart.cartitem_set.all()
+        subtotal = sum(item.total_price() for item in cart_items)
+        total_with_delivery = subtotal + delivery_cost
+        
+        return JsonResponse({
+            'success': True,
+            'delivery_cost': delivery_cost,
+            'total_with_delivery': total_with_delivery,
+            'message': 'Información de entrega actualizada'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=400)

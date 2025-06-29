@@ -183,9 +183,149 @@
             {% endfor %}
         </div>
         
+        <!-- Información de Entrega -->
+        <div class="delivery-container" style="background-color: #F2E8D5 !important; border-radius: 12px !important; padding: 2rem !important; margin-bottom: 2rem !important; box-shadow: 0 4px 8px rgba(216, 195, 165, 0.3) !important; border: solid 1px #D8C3A5 !important;">
+            <h2 style="color: #333333 !important; margin-bottom: 1.5rem !important;">
+                <i class="fas fa-truck"></i> Información de Entrega
+            </h2>
+            
+            <form id="deliveryForm" method="post">
+                {% csrf_token %}
+                
+                <!-- Método de entrega -->
+                <div class="delivery-method-section" style="margin-bottom: 2rem !important;">
+                    <h4 style="color: #333333 !important; margin-bottom: 1rem !important;">Selecciona tu método de entrega:</h4>
+                    
+                    <div class="delivery-options" style="display: flex !important; gap: 1rem !important; flex-wrap: wrap !important;">
+                        <div class="delivery-option" style="flex: 1 !important; min-width: 300px !important;">
+                            <label class="delivery-radio" style="display: flex !important; align-items: center !important; padding: 1.5rem !important; background-color: #FFFFFF !important; border: 2px solid #D8C3A5 !important; border-radius: 12px !important; cursor: pointer !important; transition: all 0.3s ease !important;">
+                                <input type="radio" name="delivery_method" value="pickup" {% if delivery_info.delivery_method == 'pickup' or not delivery_info.delivery_method %}checked{% endif %} style="margin-right: 1rem !important;">
+                                <div class="option-content">
+                                    <div class="option-title" style="font-weight: 600 !important; color: #333333 !important; font-size: 1.1rem !important;">
+                                        <i class="fas fa-store" style="margin-right: 0.5rem !important;"></i>
+                                        Retiro en Tienda
+                                    </div>
+                                    <div class="option-price" style="color: #28a745 !important; font-weight: 600 !important; font-size: 1.2rem !important;">GRATIS</div>
+                                    <div class="option-description" style="color: #666666 !important; font-size: 0.9rem !important; margin-top: 0.5rem !important;">
+                                        Retira tu pedido en cualquiera de nuestras tiendas
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="delivery-option" style="flex: 1 !important; min-width: 300px !important;">
+                            <label class="delivery-radio" style="display: flex !important; align-items: center !important; padding: 1.5rem !important; background-color: #FFFFFF !important; border: 2px solid #D8C3A5 !important; border-radius: 12px !important; cursor: pointer !important; transition: all 0.3s ease !important;">
+                                <input type="radio" name="delivery_method" value="delivery" {% if delivery_info.delivery_method == 'delivery' %}checked{% endif %} style="margin-right: 1rem !important;">
+                                <div class="option-content">
+                                    <div class="option-title" style="font-weight: 600 !important; color: #333333 !important; font-size: 1.1rem !important;">
+                                        <i class="fas fa-truck" style="margin-right: 0.5rem !important;"></i>
+                                        Delivery a Domicilio
+                                    </div>
+                                    <div class="option-price" style="color: #007bff !important; font-weight: 600 !important; font-size: 1.2rem !important;">$3.000</div>
+                                    <div class="option-description" style="color: #666666 !important; font-size: 0.9rem !important; margin-top: 0.5rem !important;">
+                                        Recibe tu pedido en la comodidad de tu hogar
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Información para retiro en tienda -->
+                <div id="pickupInfo" class="delivery-info-section" style="background-color: #FFFFFF !important; border: 2px solid #D8C3A5 !important; border-radius: 12px !important; padding: 1.5rem !important; margin-bottom: 1rem !important;">
+                    <h5 style="color: #333333 !important; margin-bottom: 1rem !important;">
+                        <i class="fas fa-map-marker-alt"></i> Selecciona la tienda para retiro
+                    </h5>
+                    
+                    <div class="store-options" style="display: flex !important; flex-direction: column !important; gap: 1rem !important;">
+                        <label style="display: flex !important; align-items: center !important; padding: 1rem !important; background-color: #F8F9FA !important; border: 1px solid #E9ECEF !important; border-radius: 8px !important; cursor: pointer !important;">
+                            <input type="radio" name="pickup_store" value="main_store" checked style="margin-right: 1rem !important;">
+                            <div>
+                                <div style="font-weight: 600 !important; color: #333333 !important;">Tienda Principal</div>
+                                <div style="color: #666666 !important; font-size: 0.9rem !important;">Av. Providencia 1234, Providencia</div>
+                                <div style="color: #666666 !important; font-size: 0.8rem !important;">Lun-Vie: 9:00-21:00, Sáb: 10:00-19:00</div>
+                            </div>
+                        </label>
+                        
+                        <label style="display: flex !important; align-items: center !important; padding: 1rem !important; background-color: #F8F9FA !important; border: 1px solid #E9ECEF !important; border-radius: 8px !important; cursor: pointer !important;">
+                            <input type="radio" name="pickup_store" value="mall_store" style="margin-right: 1rem !important;">
+                            <div>
+                                <div style="font-weight: 600 !important; color: #333333 !important;">Sucursal Mall</div>
+                                <div style="color: #666666 !important; font-size: 0.9rem !important;">Centro Comercial Plaza, Local 234</div>
+                                <div style="color: #666666 !important; font-size: 0.8rem !important;">Lun-Dom: 10:00-22:00</div>
+                            </div>
+                        </label>
+                        
+                        <label style="display: flex !important; align-items: center !important; padding: 1rem !important; background-color: #F8F9FA !important; border: 1px solid #E9ECEF !important; border-radius: 8px !important; cursor: pointer !important;">
+                            <input type="radio" name="pickup_store" value="norte_store" style="margin-right: 1rem !important;">
+                            <div>
+                                <div style="font-weight: 600 !important; color: #333333 !important;">Sucursal Norte</div>
+                                <div style="color: #666666 !important; font-size: 0.9rem !important;">Av. Independencia 567, Independencia</div>
+                                <div style="color: #666666 !important; font-size: 0.8rem !important;">Lun-Vie: 9:00-20:00, Sáb: 9:00-18:00</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Información para delivery -->
+                <div id="deliveryInfo" class="delivery-info-section" style="background-color: #FFFFFF !important; border: 2px solid #D8C3A5 !important; border-radius: 12px !important; padding: 1.5rem !important; margin-bottom: 1rem !important; display: none !important;">
+                    <h5 style="color: #333333 !important; margin-bottom: 1rem !important;">
+                        <i class="fas fa-home"></i> Información de entrega
+                    </h5>
+                    
+                    <div class="form-row" style="display: flex !important; gap: 1rem !important; flex-wrap: wrap !important; margin-bottom: 1rem !important;">
+                        <div style="flex: 2 !important; min-width: 250px !important;">
+                            <label style="display: block !important; margin-bottom: 0.5rem !important; color: #333333 !important; font-weight: 500 !important;">Dirección completa *</label>
+                            <textarea name="shipping_address" placeholder="Ej: Av. Los Leones 1234, Depto 5B" style="width: 100% !important; padding: 0.75rem !important; border: 1px solid #D8C3A5 !important; border-radius: 8px !important; resize: vertical !important; min-height: 80px !important;"></textarea>
+                        </div>
+                        <div style="flex: 1 !important; min-width: 150px !important;">
+                            <label style="display: block !important; margin-bottom: 0.5rem !important; color: #333333 !important; font-weight: 500 !important;">Ciudad *</label>
+                            <input type="text" name="shipping_city" placeholder="Santiago" style="width: 100% !important; padding: 0.75rem !important; border: 1px solid #D8C3A5 !important; border-radius: 8px !important;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" style="display: flex !important; gap: 1rem !important; flex-wrap: wrap !important; margin-bottom: 1rem !important;">
+                        <div style="flex: 1 !important; min-width: 200px !important;">
+                            <label style="display: block !important; margin-bottom: 0.5rem !important; color: #333333 !important; font-weight: 500 !important;">Teléfono de contacto *</label>
+                            <input type="tel" name="shipping_phone" placeholder="+56 9 1234 5678" style="width: 100% !important; padding: 0.75rem !important; border: 1px solid #D8C3A5 !important; border-radius: 8px !important;">
+                        </div>
+                    </div>
+                    
+                    <div class="delivery-note" style="background-color: #E3F2FD !important; border: 1px solid #BBDEFB !important; border-radius: 8px !important; padding: 1rem !important; margin-top: 1rem !important;">
+                        <div style="display: flex !important; align-items: center !important; color: #1976D2 !important;">
+                            <i class="fas fa-info-circle" style="margin-right: 0.5rem !important;"></i>
+                            <span style="font-weight: 500 !important;">Información de delivery</span>
+                        </div>
+                        <ul style="margin: 0.5rem 0 0 1.5rem !important; color: #1976D2 !important; font-size: 0.9rem !important;">
+                            <li>Tiempo de entrega: 2-5 días hábiles</li>
+                            <li>Horario de entrega: Lunes a Viernes 9:00-18:00</li>
+                            <li>Te contactaremos antes de la entrega</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Instrucciones especiales -->
+                <div class="special-instructions" style="margin-top: 1rem !important;">
+                    <label style="display: block !important; margin-bottom: 0.5rem !important; color: #333333 !important; font-weight: 500 !important;">
+                        <i class="fas fa-comment"></i> Instrucciones especiales (opcional)
+                    </label>
+                    <textarea name="special_instructions" placeholder="Ej: Tocar el timbre dos veces, dejar en portería..." style="width: 100% !important; padding: 0.75rem !important; border: 1px solid #D8C3A5 !important; border-radius: 8px !important; resize: vertical !important; min-height: 60px !important;"></textarea>
+                </div>
+            </form>
+        </div>
+        
         <div class="total-section">
+            <div style="display: flex !important; justify-content: space-between !important; margin-bottom: 1rem !important;">
+                <span style="color: white !important;">Subtotal productos:</span>
+                <span style="color: white !important;" id="subtotal">${{ total }}</span>
+            </div>
+            <div style="display: flex !important; justify-content: space-between !important; margin-bottom: 1rem !important;">
+                <span style="color: white !important;">Costo de envío:</span>
+                <span style="color: white !important;" id="deliveryCost">{% if delivery_cost > 0 %}${{ delivery_cost }}{% else %}GRATIS{% endif %}</span>
+            </div>
+            <hr style="border-color: rgba(255,255,255,0.3) !important;">
             <p class="total-label">Total a Pagar</p>
-            <p class="total-amount">${{ total }}</p>
+            <p class="total-amount" id="totalAmount">${{ total_with_delivery|default:total }}</p>
         </div>
         
         <div class="payment-container">
@@ -224,6 +364,10 @@
     </div>
     
     <script>
+        // Variables globales
+        const subtotalAmount = parseFloat({{ total }});
+        const deliveryCost = 3000;
+        
         // Mostrar loading al enviar el formulario de PayPal
         document.addEventListener('DOMContentLoaded', function() {
             const paypalButtons = document.querySelectorAll('form[action*="paypal"]');
@@ -232,7 +376,194 @@
                     document.getElementById('loadingOverlay').style.display = 'flex';
                 });
             });
+            
+            // Inicializar funcionalidad de método de entrega
+            initDeliveryMethodHandlers();
         });
+        
+        function initDeliveryMethodHandlers() {
+            const deliveryRadios = document.querySelectorAll('input[name="delivery_method"]');
+            const pickupInfo = document.getElementById('pickupInfo');
+            const deliveryInfo = document.getElementById('deliveryInfo');
+            const deliveryCostSpan = document.getElementById('deliveryCost');
+            const totalAmountSpan = document.getElementById('totalAmount');
+            
+            // Agregar event listeners a los radio buttons
+            deliveryRadios.forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    updateDeliveryInfo();
+                    updateTotal();
+                    updateDeliveryRadioStyles();
+                });
+            });
+            
+            // Inicializar el estado
+            updateDeliveryInfo();
+            updateTotal();
+            updateDeliveryRadioStyles();
+        }
+        
+        function updateDeliveryInfo() {
+            const selectedMethod = document.querySelector('input[name="delivery_method"]:checked').value;
+            const pickupInfo = document.getElementById('pickupInfo');
+            const deliveryInfo = document.getElementById('deliveryInfo');
+            
+            if (selectedMethod === 'pickup') {
+                pickupInfo.style.display = 'block';
+                deliveryInfo.style.display = 'none';
+                
+                // Limpiar campos de delivery
+                clearDeliveryFields();
+            } else {
+                pickupInfo.style.display = 'none';
+                deliveryInfo.style.display = 'block';
+                
+                // Limpiar campos de pickup
+                clearPickupFields();
+            }
+        }
+        
+        function updateTotal() {
+            const selectedMethod = document.querySelector('input[name="delivery_method"]:checked').value;
+            const deliveryCostSpan = document.getElementById('deliveryCost');
+            const totalAmountSpan = document.getElementById('totalAmount');
+            
+            let currentDeliveryCost = 0;
+            let totalAmount = subtotalAmount;
+            
+            if (selectedMethod === 'delivery') {
+                currentDeliveryCost = deliveryCost;
+                totalAmount = subtotalAmount + currentDeliveryCost;
+                deliveryCostSpan.textContent = '$' + currentDeliveryCost.toLocaleString();
+            } else {
+                deliveryCostSpan.textContent = 'GRATIS';
+            }
+            
+            totalAmountSpan.textContent = '$' + totalAmount.toLocaleString();
+            
+            // Actualizar el formulario de PayPal si es necesario
+            updatePaypalAmount(totalAmount);
+        }
+        
+        function updateDeliveryRadioStyles() {
+            const deliveryRadios = document.querySelectorAll('.delivery-radio');
+            
+            deliveryRadios.forEach(function(label) {
+                const radio = label.querySelector('input[type="radio"]');
+                if (radio.checked) {
+                    label.style.borderColor = '#007bff';
+                    label.style.backgroundColor = '#f8f9ff';
+                } else {
+                    label.style.borderColor = '#D8C3A5';
+                    label.style.backgroundColor = '#FFFFFF';
+                }
+            });
+        }
+        
+        function clearDeliveryFields() {
+            document.querySelector('textarea[name="shipping_address"]').value = '';
+            document.querySelector('input[name="shipping_city"]').value = '';
+            document.querySelector('input[name="shipping_phone"]').value = '';
+        }
+        
+        function clearPickupFields() {
+            // No necesitamos limpiar los campos de pickup ya que son radio buttons
+            // que mantendrán su valor seleccionado
+        }
+        
+        function updatePaypalAmount(newAmount) {
+            // Aquí podrías actualizar el monto en el formulario de PayPal
+            // Esto dependería de cómo esté implementado el formulario de PayPal
+            const paypalAmountInput = document.querySelector('input[name="amount"]');
+            if (paypalAmountInput) {
+                paypalAmountInput.value = newAmount;
+            }
+        }
+        
+        // Validación antes de proceder al pago
+        function validateDeliveryInfo() {
+            const selectedMethod = document.querySelector('input[name="delivery_method"]:checked').value;
+            
+            if (selectedMethod === 'delivery') {
+                const address = document.querySelector('textarea[name="shipping_address"]').value.trim();
+                const city = document.querySelector('input[name="shipping_city"]').value.trim();
+                const phone = document.querySelector('input[name="shipping_phone"]').value.trim();
+                
+                if (!address || !city || !phone) {
+                    alert('Por favor, completa todos los campos obligatorios para el delivery.');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        // Interceptar el envío del formulario de PayPal para validar
+        document.addEventListener('DOMContentLoaded', function() {
+            const paypalForms = document.querySelectorAll('form[action*="paypal"]');
+            paypalForms.forEach(function(form) {
+                form.addEventListener('submit', function(e) {
+                    if (!validateDeliveryInfo()) {
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    // Guardar información de entrega en el formulario
+                    saveDeliveryInfoToPaypal(form);
+                });
+            });
+        });
+        
+        function saveDeliveryInfoToPaypal(paypalForm) {
+            const selectedMethod = document.querySelector('input[name="delivery_method"]:checked').value;
+            
+            // Crear campos ocultos para enviar con PayPal
+            const deliveryMethodInput = document.createElement('input');
+            deliveryMethodInput.type = 'hidden';
+            deliveryMethodInput.name = 'delivery_method';
+            deliveryMethodInput.value = selectedMethod;
+            paypalForm.appendChild(deliveryMethodInput);
+            
+            if (selectedMethod === 'delivery') {
+                const address = document.querySelector('textarea[name="shipping_address"]').value;
+                const city = document.querySelector('input[name="shipping_city"]').value;
+                const phone = document.querySelector('input[name="shipping_phone"]').value;
+                
+                const addressInput = document.createElement('input');
+                addressInput.type = 'hidden';
+                addressInput.name = 'shipping_address';
+                addressInput.value = address;
+                paypalForm.appendChild(addressInput);
+                
+                const cityInput = document.createElement('input');
+                cityInput.type = 'hidden';
+                cityInput.name = 'shipping_city';
+                cityInput.value = city;
+                paypalForm.appendChild(cityInput);
+                
+                const phoneInput = document.createElement('input');
+                phoneInput.type = 'hidden';
+                phoneInput.name = 'shipping_phone';
+                phoneInput.value = phone;
+                paypalForm.appendChild(phoneInput);
+            } else {
+                const selectedStore = document.querySelector('input[name="pickup_store"]:checked').value;
+                const storeInput = document.createElement('input');
+                storeInput.type = 'hidden';
+                storeInput.name = 'pickup_store';
+                storeInput.value = selectedStore;
+                paypalForm.appendChild(storeInput);
+            }
+            
+            const instructionsValue = document.querySelector('textarea[name="special_instructions"]').value;
+            if (instructionsValue) {
+                const instructionsInput = document.createElement('input');
+                instructionsInput.type = 'hidden';
+                instructionsInput.name = 'special_instructions';
+                instructionsInput.value = instructionsValue;
+                paypalForm.appendChild(instructionsInput);
+            }
+        }
     </script>
 </body>
 </html>

@@ -9,6 +9,7 @@ urlpatterns = [
     path('cart/', views.view_cart, name='view_cart'),
     path('cart/count/', views.get_cart_count, name='get_cart_count'),
     path('checkout/', views.checkout, name='checkout'),
+    path('update-delivery-info/', views.update_delivery_info, name='update_delivery_info'),
     path('payment-successful/', views.payment_successful, name='payment-success'),
     path('payment-failed/', views.payment_failed, name='payment-failed'),
     path('paypal-ipn/', views.handle_paypal_ipn, name='paypal-ipn'),

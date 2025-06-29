@@ -1,0 +1,410 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load math_filters %}
+
+{% block title %}Historial de Transacciones - Ferremas{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); min-height: 100vh; padding: 2rem 0;">
+    
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-1" style="color: #5A3E2B;">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>Historial de Transacciones
+                    </h1>
+                    <p class="text-muted mb-0">Registro completo de todas las ventas y transacciones</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'dashboard-contador' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Volver al Dashboard
+                    </a>
+                    <button class="btn btn-success" onclick="window.location.href='{% url 'exportar-transacciones-contador' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}'">
+                        <i class="fas fa-download me-1"></i>Exportar a CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Generales -->
+    <div class="row mb-4">
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                             style="width: 50px; height: 50px; background: linear-gradient(135deg, #007bff, #0056b3);">
+                            <i class="fas fa-shopping-cart text-white"></i>
+                        </div>
+                    </div>
+                    <h4 class="h5 mb-1">{{ stats.total_ordenes }}</h4>
+                    <small class="text-muted">Total Órdenes</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                             style="width: 50px; height: 50px; background: linear-gradient(135deg, #28a745, #1e7e34);">
+                            <i class="fas fa-check-circle text-white"></i>
+                        </div>
+                    </div>
+                    <h4 class="h5 mb-1">{{ stats.ordenes_completadas }}</h4>
+                    <small class="text-muted">Completadas</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                             style="width: 50px; height: 50px; background: linear-gradient(135deg, #17a2b8, #138496);">
+                            <i class="fas fa-dollar-sign text-white"></i>
+                        </div>
+                    </div>
+                    <h4 class="h5 mb-1">${{ stats.ventas_totales|floatformat:0 }}</h4>
+                    <small class="text-muted">Ventas Totales</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                             style="width: 50px; height: 50px; background: linear-gradient(135deg, #ffc107, #e0a800);">
+                            <i class="fas fa-clock text-white"></i>
+                        </div>
+                    </div>
+                    <h4 class="h5 mb-1">{{ stats.ordenes_pendientes }}</h4>
+                    <small class="text-muted">Pendientes</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                             style="width: 50px; height: 50px; background: linear-gradient(135deg, #6f42c1, #5a2d91);">
+                            <i class="fas fa-calendar-month text-white"></i>
+                        </div>
+                    </div>
+                    <h4 class="h5 mb-1">{{ stats.ordenes_mes }}</h4>
+                    <small class="text-muted">Este Mes</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                             style="width: 50px; height: 50px; background: linear-gradient(135deg, #dc3545, #b21f2d);">
+                            <i class="fas fa-chart-line text-white"></i>
+                        </div>
+                    </div>
+                    <h4 class="h5 mb-1">${{ stats.ventas_mes|floatformat:0 }}</h4>
+                    <small class="text-muted">Ventas del Mes</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros de Búsqueda -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+        <div class="card-header bg-transparent border-0 py-3">
+            <h5 class="mb-0" style="color: #5A3E2B;">
+                <i class="fas fa-filter me-2"></i>Filtros de Búsqueda
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="search" class="form-label">Buscar</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           value="{{ search_query }}" placeholder="Número de orden, cliente...">
+                </div>
+                
+                <div class="col-md-2">
+                    <label for="status" class="form-label">Estado de Orden</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">Todos</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <label for="payment_status" class="form-label">Estado de Pago</label>
+                    <select class="form-select" id="payment_status" name="payment_status">
+                        <option value="">Todos</option>
+                        {% for value, label in payment_status_choices %}
+                            <option value="{{ value }}" {% if current_payment_status == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    <label for="date_from" class="form-label">Desde</label>
+                    <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+                </div>
+                
+                <div class="col-md-2">
+                    <label for="date_to" class="form-label">Hasta</label>
+                    <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+                </div>
+                
+                <div class="col-md-1">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            {% if request.GET %}
+            <div class="mt-3">
+                <a href="{% url 'historial-transacciones-contador' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-times me-1"></i>Limpiar Filtros
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Tabla de Transacciones -->
+    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+        <div class="card-header bg-transparent border-0 py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0" style="color: #5A3E2B;">
+                    <i class="fas fa-list me-2"></i>Transacciones
+                    {% if orders.paginator.count %}
+                        <small class="text-muted">({{ orders.paginator.count }} resultado{{ orders.paginator.count|pluralize }})</small>
+                    {% endif %}
+                </h5>
+                
+                <div class="d-flex align-items-center gap-2">
+                    <label for="per_page" class="form-label mb-0 text-muted">Mostrar:</label>
+                    <select class="form-select form-select-sm" id="per_page" name="per_page" onchange="updatePerPage(this.value)" style="width: auto;">
+                        <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+                        <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
+                        <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                        <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if orders %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Orden #</th>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Pago</th>
+                                <th>Total</th>
+                                <th>Método de Pago</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>
+                                    <span class="fw-bold text-primary">{{ order.order_number }}</span>
+                                </td>
+                                <td>
+                                    <div>
+                                        <div class="fw-semibold">{{ order.user.get_full_name|default:order.user.username }}</div>
+                                        <small class="text-muted">{{ order.user.email }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>{{ order.created_at|date:"d/m/Y" }}</div>
+                                    <small class="text-muted">{{ order.created_at|date:"H:i" }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if order.order_status == 'delivered' %}success{% elif order.order_status == 'shipped' %}info{% elif order.order_status == 'confirmed' %}warning{% elif order.order_status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+                                        {{ order.get_order_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if order.payment_status == 'completed' %}success{% elif order.payment_status == 'pending' %}warning{% elif order.payment_status == 'failed' %}danger{% else %}secondary{% endif %}">
+                                        {{ order.get_payment_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-success">${{ order.total_amount|floatformat:2 }}</span>
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{ order.payment_method|default:"No especificado" }}</span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'detalle-transaccion-contador' order.id %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>Ver Detalle
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Paginación -->
+                {% if orders.has_other_pages %}
+                <nav aria-label="Navegación de páginas" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if orders.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ orders.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.payment_status %}&payment_status={{ request.GET.payment_status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}{% if request.GET.per_page %}&per_page={{ request.GET.per_page }}{% endif %}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for page_num in orders.paginator.page_range %}
+                            {% if page_num == orders.number %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% elif page_num > orders.number|add:"-3" and page_num < orders.number|add:"3" %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_num }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.payment_status %}&payment_status={{ request.GET.payment_status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}{% if request.GET.per_page %}&per_page={{ request.GET.per_page }}{% endif %}">{{ page_num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if orders.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ orders.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.payment_status %}&payment_status={{ request.GET.payment_status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}{% if request.GET.per_page %}&per_page={{ request.GET.per_page }}{% endif %}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                
+                <div class="text-center text-muted">
+                    Mostrando {{ orders.start_index }} - {{ orders.end_index }} de {{ orders.paginator.count }} transacciones
+                </div>
+                {% endif %}
+                
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-file-invoice-dollar fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">No se encontraron transacciones</h5>
+                    <p class="text-muted">
+                        {% if request.GET %}
+                            Intenta ajustar los filtros de búsqueda.
+                        {% else %}
+                            Aún no hay transacciones registradas en el sistema.
+                        {% endif %}
+                    </p>
+                    {% if request.GET %}
+                        <a href="{% url 'historial-transacciones-contador' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-times me-1"></i>Limpiar Filtros
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function updatePerPage(value) {
+    const url = new URL(window.location);
+    url.searchParams.set('per_page', value);
+    url.searchParams.delete('page'); // Reset to first page
+    window.location.href = url.toString();
+}
+</script>
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-1px);
+}
+
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #5A3E2B;
+    font-size: 0.9rem;
+}
+
+.badge {
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #e3e6f0;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #5A3E2B;
+    box-shadow: 0 0 0 0.2rem rgba(90, 62, 43, 0.25);
+}
+
+.pagination .page-link {
+    border-radius: 8px;
+    margin: 0 2px;
+    border: 1px solid #e3e6f0;
+    color: #5A3E2B;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #5A3E2B;
+    border-color: #5A3E2B;
+}
+
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 1rem 0;
+    }
+    
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+}
+</style>
+
+{% endblock %}

@@ -4,12 +4,34 @@ from miPaypal.forms import ProductForm, CustomUserCreationForm, StaffRegistratio
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login as auth_login, logout
 from django.contrib import messages
-from miPaypal.decorators import admin_required, role_required
+from miPaypal.decorators import admin_required, admin_only_required, role_required
 from django.core.paginator import Paginator
-from django.db.models import Q 
+from django.db.models import Q, Sum, Count, F, Avg
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db import transaction
 from django.utils import timezone
+from django.http import HttpResponse
+from datetime import datetime, timedelta
+import calendar
+import io
+import base64
+
+# Importaciones para PDF
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak
+from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.charts.piecharts import Pie
+from reportlab.graphics.charts.barcharts import VerticalBarChart
+from reportlab.lib.validators import Auto
+
+# Importaciones para gráficos
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 # Create your views here.
 def index(request):
@@ -44,9 +66,14 @@ def login(request):
             if next_url:
                 return redirect(next_url)
             
-            # Redirigir al dashboard si es staff, sino al índice
+            # Redirigir según el rol del usuario
             if user.is_staff:
-                return redirect('dashboard-panel-page')
+                if user.rol == 'contador':
+                    return redirect('dashboard-contador')
+                elif user.rol == 'bodeguero':
+                    return redirect('dashboard-bodeguero')
+                else:
+                    return redirect('dashboard-panel-page')
             else:
                 return redirect('index-page')
         else:
@@ -199,8 +226,8 @@ def contact_view(request):
     
     return render(request, 'ecommerce/contact.html', context)
 
-@admin_required
-@admin_required
+@admin_only_required
+@admin_only_required
 def admin_settings(request):
     """Vista para configuraciones del sistema"""
     # Obtener estadísticas básicas
@@ -216,7 +243,7 @@ def admin_settings(request):
     
     return render(request, 'dashboard-panel/profile/admin-settings.html', context)
 
-@admin_required
+@admin_only_required
 def admin_profile(request):
     """Vista para ver y editar el perfil del administrador"""
     if request.method == 'POST':
@@ -248,7 +275,7 @@ def admin_profile(request):
     
     return render(request, 'dashboard-panel/profile/admin-profile.html', context)
 
-@admin_required
+@admin_only_required
 def dashboard(request):
     """Vista para el dashboard con estadísticas"""
     from django.db.models import Count
@@ -282,7 +309,7 @@ def dashboard(request):
     
     return render(request, 'dashboard-panel/dashboard.html', context)
 
-@admin_required
+@admin_only_required
 def list_products(request):
     # Obtener parámetros de filtro
     category_id = request.GET.get('category')
@@ -335,7 +362,7 @@ def list_products(request):
     })
 
 
-@admin_required
+@admin_only_required
 def crear_pview(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -373,7 +400,7 @@ def crear_pview(request):
         'categories': categories
     })
 
-@admin_required
+@admin_only_required
 def delete_product(request, pk):
     """Vista para eliminar productos"""
     product = get_object_or_404(Product, pk=pk)
@@ -384,7 +411,7 @@ def delete_product(request, pk):
     return render(request, 'dashboard-panel/crud-products/confirm-delete.html', {'product': product})
 
 
-@admin_required
+@admin_only_required
 def update_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     
@@ -401,7 +428,7 @@ def update_product(request, pk):
         'product': product
     })
 
-@admin_required
+@admin_only_required
 def staff_register(request):
     """Vista para registrar nuevos usuarios (solo admin)"""
     if request.method == 'POST':
@@ -415,7 +442,7 @@ def staff_register(request):
     
     return render(request, 'dashboard-panel/crud-users/create-user.html', {'form': form})
 
-@admin_required
+@admin_only_required
 def list_user(request):
     """Vista unificada para listar usuarios con filtros y paginación"""
     role_filter = request.GET.get('role')
@@ -459,7 +486,7 @@ def list_user(request):
         'user_roles': CustomUser.ROLES
     })
 
-@admin_required
+@admin_only_required
 def delete_user(request, user_id):
     """Vista para eliminar usuarios"""
     user = get_object_or_404(CustomUser, id=user_id)
@@ -470,7 +497,7 @@ def delete_user(request, user_id):
         return redirect('list-user')  # Cambiado a 'list-user' para consistencia
     return render(request, 'dashboard-panel/crud-users/confirm-delete.html', {'user': user})
 
-@admin_required
+@admin_only_required
 def edit_user(request, user_id):
     """Vista para editar usuarios existentes"""
     user = get_object_or_404(CustomUser, id=user_id)
@@ -485,7 +512,7 @@ def edit_user(request, user_id):
     
     return render(request, 'dashboard-panel/crud-users/edit-user.html', {'form': form})
 
-@admin_required
+@admin_only_required
 def product_detail(request, pk):
     """Vista para mostrar los detalles completos de un producto"""
     product = get_object_or_404(Product, pk=pk)
@@ -501,7 +528,7 @@ def product_detail(request, pk):
         'related_products': related_products
     })
 
-@admin_required
+@admin_only_required
 def list_contact_messages(request):
     """Vista para listar mensajes de contacto en el dashboard del admin"""
     status_filter = request.GET.get('status')
@@ -538,7 +565,7 @@ def list_contact_messages(request):
         'reason_choices': ContactMessage.REASON_CHOICES,
     })
 
-@admin_required
+@admin_only_required
 def view_contact_message(request, message_id):
     """Vista para ver un mensaje de contacto específico"""
     message = get_object_or_404(ContactMessage, id=message_id)
@@ -564,7 +591,7 @@ def view_contact_message(request, message_id):
         'status_choices': ContactMessage.STATUS_CHOICES,
     })
 
-@admin_required
+@admin_only_required
 def delete_contact_message(request, message_id):
     """Vista para eliminar un mensaje de contacto"""
     message = get_object_or_404(ContactMessage, id=message_id)
@@ -579,7 +606,7 @@ def delete_contact_message(request, message_id):
         'message': message
     })
 
-@admin_required
+@admin_only_required
 def change_password(request):
     """Vista para cambiar la contraseña del usuario"""
     if request.method == 'POST':
@@ -1441,4 +1468,623 @@ def marcar_orden_entregada(request, order_id):
         return redirect('order-detail-admin', order_id=order_id)
     
     return redirect('order-detail-admin', order_id=order_id)
+
+@role_required('contador')
+def dashboard_contador(request):
+    """Dashboard principal para contadores"""
+    
+    # Obtener estadísticas de órdenes
+    from datetime import datetime, timedelta
+    hoy = datetime.now().date()
+    
+    # Estadísticas generales
+    total_ordenes = Order.objects.count()
+    ordenes_pendientes = Order.objects.filter(order_status__in=['pending', 'confirmed', 'processing']).count()
+    ordenes_enviadas = Order.objects.filter(order_status='shipped').count()
+    ordenes_entregadas_hoy = Order.objects.filter(
+        order_status='delivered',
+        updated_at__date=hoy
+    ).count()
+    
+    # Órdenes que necesitan atención del contador
+    ordenes_para_entrega = Order.objects.filter(
+        order_status='shipped'
+    ).order_by('-updated_at')[:10]
+    
+    # Órdenes recientes
+    ordenes_recientes = Order.objects.all().order_by('-created_at')[:5]
+    
+    # Estadísticas por estado
+    ordenes_por_estado = {}
+    for choice in Order.ORDER_STATUS_CHOICES:
+        estado = choice[0]
+        count = Order.objects.filter(order_status=estado).count()
+        ordenes_por_estado[choice[1]] = count
+    
+    # Estadísticas de pagos
+    pagos_completados = Order.objects.filter(payment_status='completed').count()
+    pagos_pendientes = Order.objects.filter(payment_status='pending').count()
+    
+    # Resumen de ventas del mes
+    inicio_mes = hoy.replace(day=1)
+    ordenes_mes = Order.objects.filter(
+        created_at__date__gte=inicio_mes,
+        payment_status='completed'
+    )
+    ventas_mes = sum(orden.total_amount for orden in ordenes_mes)
+    
+    stats = {
+        'total_ordenes': total_ordenes,
+        'ordenes_pendientes': ordenes_pendientes,
+        'ordenes_enviadas': ordenes_enviadas,
+        'ordenes_entregadas_hoy': ordenes_entregadas_hoy,
+        'pagos_completados': pagos_completados,
+        'pagos_pendientes': pagos_pendientes,
+        'ventas_mes': ventas_mes,
+        'ordenes_mes_count': ordenes_mes.count(),
+    }
+    
+    context = {
+        'stats': stats,
+        'ordenes_para_entrega': ordenes_para_entrega,
+        'ordenes_recientes': ordenes_recientes,
+        'ordenes_por_estado': ordenes_por_estado,
+    }
+    
+    return render(request, 'dashboard-panel/contador/dashboard-contador.html', context)
+
+# Vistas para generación de informes mensuales
+
+@admin_only_required
+def informes_mensuales(request):
+    """Vista para mostrar el panel de informes mensuales"""
+    # Obtener año y mes actual
+    hoy = datetime.now()
+    año_actual = hoy.year
+    mes_actual = hoy.month
+    
+    # Obtener parámetros de filtro
+    año_seleccionado = request.GET.get('año', año_actual)
+    mes_seleccionado = request.GET.get('mes', mes_actual)
+    
+    try:
+        año_seleccionado = int(año_seleccionado)
+        mes_seleccionado = int(mes_seleccionado)
+    except (ValueError, TypeError):
+        año_seleccionado = año_actual
+        mes_seleccionado = mes_actual
+    
+    # Calcular fechas del mes seleccionado
+    primer_dia_mes = datetime(año_seleccionado, mes_seleccionado, 1)
+    ultimo_dia_mes = datetime(año_seleccionado, mes_seleccionado, 
+                             calendar.monthrange(año_seleccionado, mes_seleccionado)[1])
+    
+    # Obtener estadísticas del mes
+    ordenes_mes = Order.objects.filter(
+        created_at__date__gte=primer_dia_mes.date(),
+        created_at__date__lte=ultimo_dia_mes.date()
+    )
+    
+    # Estadísticas básicas
+    total_ordenes = ordenes_mes.count()
+    ordenes_completadas = ordenes_mes.filter(payment_status='completed').count()
+    ventas_totales = ordenes_mes.filter(payment_status='completed').aggregate(
+        total=Sum('total_amount'))['total'] or 0
+    
+    # Promedio por orden
+    promedio_orden = ventas_totales / ordenes_completadas if ordenes_completadas > 0 else 0
+    
+    # Productos más vendidos del mes
+    productos_top = OrderItem.objects.filter(
+        order__created_at__date__gte=primer_dia_mes.date(),
+        order__created_at__date__lte=ultimo_dia_mes.date(),
+        order__payment_status='completed'
+    ).values(
+        'product__name', 'product__price'
+    ).annotate(
+        cantidad_vendida=Sum('quantity'),
+        ingresos=Sum(F('quantity') * F('price'))
+    ).order_by('-cantidad_vendida')[:10]
+    
+    # Ventas por día del mes
+    ventas_diarias = []
+    for dia in range(1, calendar.monthrange(año_seleccionado, mes_seleccionado)[1] + 1):
+        fecha_dia = datetime(año_seleccionado, mes_seleccionado, dia).date()
+        ventas_dia = ordenes_mes.filter(
+            created_at__date=fecha_dia,
+            payment_status='completed'
+        ).aggregate(total=Sum('total_amount'))['total'] or 0
+        ventas_diarias.append({
+            'dia': dia,
+            'fecha': fecha_dia,
+            'ventas': ventas_dia
+        })
+    
+    # Generar lista de años disponibles (últimos 5 años)
+    años_disponibles = list(range(año_actual - 4, año_actual + 1))
+    meses_disponibles = [
+        (1, 'Enero'), (2, 'Febrero'), (3, 'Marzo'), (4, 'Abril'),
+        (5, 'Mayo'), (6, 'Junio'), (7, 'Julio'), (8, 'Agosto'),
+        (9, 'Septiembre'), (10, 'Octubre'), (11, 'Noviembre'), (12, 'Diciembre')
+    ]
+    
+    context = {
+        'año_seleccionado': año_seleccionado,
+        'mes_seleccionado': mes_seleccionado,
+        'mes_nombre': calendar.month_name[mes_seleccionado],
+        'años_disponibles': años_disponibles,
+        'meses_disponibles': meses_disponibles,
+        'total_ordenes': total_ordenes,
+        'ordenes_completadas': ordenes_completadas,
+        'ventas_totales': ventas_totales,
+        'promedio_orden': promedio_orden,
+        'productos_top': productos_top,
+        'ventas_diarias': ventas_diarias,
+        'primer_dia_mes': primer_dia_mes,
+        'ultimo_dia_mes': ultimo_dia_mes,
+    }
+    
+    return render(request, 'dashboard-panel/informes/informes-mensuales.html', context)
+
+
+@admin_only_required
+def generar_informe_pdf(request):
+    """Generar informe mensual en formato PDF"""
+    # Obtener parámetros
+    año = int(request.GET.get('año', datetime.now().year))
+    mes = int(request.GET.get('mes', datetime.now().month))
+    
+    # Calcular fechas del mes
+    primer_dia_mes = datetime(año, mes, 1)
+    ultimo_dia_mes = datetime(año, mes, calendar.monthrange(año, mes)[1])
+    
+    # Crear respuesta HTTP para PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="informe_ventas_{calendar.month_name[mes]}_{año}.pdf"'
+    
+    # Crear el documento PDF
+    doc = SimpleDocTemplate(response, pagesize=A4)
+    styles = getSampleStyleSheet()
+    story = []
+    
+    # Título del informe
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=18,
+        spaceAfter=30,
+        alignment=1,  # Centrado
+        textColor=colors.darkblue
+    )
+    
+    title = Paragraph(
+        f"INFORME DE VENTAS - {calendar.month_name[mes].upper()} {año}",
+        title_style
+    )
+    story.append(title)
+    story.append(Spacer(1, 20))
+    
+    # Información de la empresa
+    company_style = ParagraphStyle(
+        'CompanyInfo',
+        parent=styles['Normal'],
+        fontSize=10,
+        alignment=1,
+        textColor=colors.grey
+    )
+    
+    company_info = Paragraph(
+        "FERREMAS - Sistema de Gestión de Ventas<br/>Generado el: " + 
+        datetime.now().strftime("%d/%m/%Y %H:%M"),
+        company_style
+    )
+    story.append(company_info)
+    story.append(Spacer(1, 30))
+    
+    # Obtener datos del mes
+    ordenes_mes = Order.objects.filter(
+        created_at__date__gte=primer_dia_mes.date(),
+        created_at__date__lte=ultimo_dia_mes.date()
+    )
+    
+    ordenes_completadas = ordenes_mes.filter(payment_status='completed')
+    ventas_totales = ordenes_completadas.aggregate(total=Sum('total_amount'))['total'] or 0
+    
+    # Resumen ejecutivo
+    resumen_data = [
+        ['CONCEPTO', 'VALOR'],
+        ['Total de Órdenes', f"{ordenes_mes.count():,}"],
+        ['Órdenes Completadas', f"{ordenes_completadas.count():,}"],
+        ['Ventas Totales', f"${ventas_totales:,.2f}"],
+        ['Promedio por Orden', f"${(ventas_totales / ordenes_completadas.count() if ordenes_completadas.count() > 0 else 0):,.2f}"],
+        ['Tasa de Conversión', f"{(ordenes_completadas.count() / ordenes_mes.count() * 100 if ordenes_mes.count() > 0 else 0):.1f}%"],
+    ]
+    
+    resumen_table = Table(resumen_data, colWidths=[3*inch, 2*inch])
+    resumen_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    
+    story.append(Paragraph("RESUMEN EJECUTIVO", styles['Heading2']))
+    story.append(Spacer(1, 12))
+    story.append(resumen_table)
+    story.append(Spacer(1, 30))
+    
+    # Productos más vendidos
+    productos_top = OrderItem.objects.filter(
+        order__created_at__date__gte=primer_dia_mes.date(),
+        order__created_at__date__lte=ultimo_dia_mes.date(),
+        order__payment_status='completed'
+    ).values(
+        'product__name', 'product__price'
+    ).annotate(
+        cantidad_vendida=Sum('quantity'),
+        ingresos=Sum(F('quantity') * F('price'))
+    ).order_by('-cantidad_vendida')[:10]
+    
+    if productos_top:
+        productos_data = [['PRODUCTO', 'CANTIDAD', 'PRECIO UNIT.', 'INGRESOS']]
+        for producto in productos_top:
+            productos_data.append([
+                producto['product__name'][:30] + ('...' if len(producto['product__name']) > 30 else ''),
+                f"{producto['cantidad_vendida']:,}",
+                f"${producto['product__price']:,.2f}",
+                f"${producto['ingresos']:,.2f}"
+            ])
+        
+        productos_table = Table(productos_data, colWidths=[2.5*inch, 1*inch, 1*inch, 1.5*inch])
+        productos_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.darkgreen),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.lightgreen),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ]))
+        
+        story.append(Paragraph("TOP 10 PRODUCTOS MÁS VENDIDOS", styles['Heading2']))
+        story.append(Spacer(1, 12))
+        story.append(productos_table)
+        story.append(Spacer(1, 30))
+    
+    # Ventas por estado de orden
+    estados_ordenes = ordenes_mes.values('order_status').annotate(
+        cantidad=Count('id'),
+        total_ventas=Sum('total_amount')
+    ).order_by('-cantidad')
+    
+    if estados_ordenes:
+        estados_data = [['ESTADO', 'CANTIDAD', 'VALOR TOTAL']]
+        for estado in estados_ordenes:
+            estado_nombre = dict(Order.ORDER_STATUS_CHOICES).get(estado['order_status'], estado['order_status'])
+            estados_data.append([
+                estado_nombre,
+                f"{estado['cantidad']:,}",
+                f"${estado['total_ventas'] or 0:,.2f}"
+            ])
+        
+        estados_table = Table(estados_data, colWidths=[2*inch, 1.5*inch, 2.5*inch])
+        estados_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.darkorange),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.lightyellow),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ]))
+        
+        story.append(Paragraph("VENTAS POR ESTADO DE ORDEN", styles['Heading2']))
+        story.append(Spacer(1, 12))
+        story.append(estados_table)
+        story.append(Spacer(1, 30))
+    
+    # Nueva página para gráficos
+    story.append(PageBreak())
+    
+    # Generar gráfico de ventas diarias
+    try:
+        grafico_ventas = generar_grafico_ventas_diarias(año, mes)
+        if grafico_ventas:
+            story.append(Paragraph("GRÁFICO DE VENTAS DIARIAS", styles['Heading2']))
+            story.append(Spacer(1, 12))
+            story.append(grafico_ventas)
+            story.append(Spacer(1, 30))
+    except Exception as e:
+        print(f"Error generando gráfico: {e}")
+    
+    # Pie de página con información adicional
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=8,
+        alignment=1,
+        textColor=colors.grey
+    )
+    
+    footer_text = f"""
+    <br/><br/>
+    Este informe fue generado automáticamente por el sistema Ferremas.<br/>
+    Período: {primer_dia_mes.strftime('%d/%m/%Y')} - {ultimo_dia_mes.strftime('%d/%m/%Y')}<br/>
+    Total de páginas: 2
+    """
+    
+    story.append(Paragraph(footer_text, footer_style))
+    
+    # Construir el PDF
+    doc.build(story)
+    
+    return response
+
+
+def generar_grafico_ventas_diarias(año, mes):
+    """Generar gráfico de ventas diarias para incluir en el PDF"""
+    try:
+        # Configurar matplotlib para usar backend no interactivo
+        plt.style.use('default')
+        fig, ax = plt.subplots(figsize=(10, 6))
+        
+        # Obtener datos de ventas diarias
+        primer_dia = datetime(año, mes, 1).date()
+        ultimo_dia = datetime(año, mes, calendar.monthrange(año, mes)[1]).date()
+        
+        ventas_diarias = []
+        fechas = []
+        
+        for dia in range(1, calendar.monthrange(año, mes)[1] + 1):
+            fecha_dia = datetime(año, mes, dia).date()
+            ventas_dia = Order.objects.filter(
+                created_at__date=fecha_dia,
+                payment_status='completed'
+            ).aggregate(total=Sum('total_amount'))['total'] or 0
+            
+            ventas_diarias.append(float(ventas_dia))
+            fechas.append(fecha_dia)
+        
+        # Crear el gráfico
+        ax.plot(fechas, ventas_diarias, marker='o', linewidth=2, markersize=4)
+        ax.set_title(f'Ventas Diarias - {calendar.month_name[mes]} {año}', fontsize=14, fontweight='bold')
+        ax.set_xlabel('Día del Mes')
+        ax.set_ylabel('Ventas ($)')
+        ax.grid(True, alpha=0.3)
+        
+        # Formatear eje Y para mostrar valores en miles
+        ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
+        
+        # Formatear eje X para mostrar solo algunos días
+        ax.xaxis.set_major_locator(mdates.DayLocator(interval=5))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%d'))
+        
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        
+        # Guardar en memoria
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='PNG', dpi=300, bbox_inches='tight')
+        buffer.seek(0)
+        
+        # Crear objeto Image para ReportLab
+        img = Image(buffer, width=6*inch, height=3.6*inch)
+        
+        plt.close(fig)
+        return img
+        
+    except Exception as e:
+        print(f"Error creando gráfico: {e}")
+        return None
+
+# Vistas específicas para el contador - Historial de Transacciones
+
+@role_required('contador')
+def historial_transacciones_contador(request):
+    """Vista para que el contador vea el historial completo de transacciones"""
+    
+    # Obtener parámetros de filtro
+    status_filter = request.GET.get('status')
+    payment_filter = request.GET.get('payment_status')
+    search_query = request.GET.get('search')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    per_page = request.GET.get('per_page', '25')
+    
+    try:
+        per_page = int(per_page)
+        if per_page not in [10, 25, 50, 100]:
+            per_page = 25
+    except (ValueError, TypeError):
+        per_page = 25
+    
+    # Base queryset con todas las órdenes
+    orders_list = Order.objects.all().select_related('user').prefetch_related('items__product')
+    
+    # Aplicar filtros
+    if status_filter:
+        orders_list = orders_list.filter(order_status=status_filter)
+    
+    if payment_filter:
+        orders_list = orders_list.filter(payment_status=payment_filter)
+    
+    if search_query:
+        orders_list = orders_list.filter(
+            Q(order_number__icontains=search_query) |
+            Q(user__username__icontains=search_query) |
+            Q(user__email__icontains=search_query) |
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query)
+        )
+    
+    if date_from:
+        try:
+            date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
+            orders_list = orders_list.filter(created_at__date__gte=date_from_obj)
+        except ValueError:
+            pass
+    
+    if date_to:
+        try:
+            date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+            orders_list = orders_list.filter(created_at__date__lte=date_to_obj)
+        except ValueError:
+            pass
+    
+    # Ordenar por fecha de creación (más recientes primero)
+    orders_list = orders_list.order_by('-created_at')
+    
+    # Estadísticas rápidas
+    total_ordenes = orders_list.count()
+    ordenes_completadas = orders_list.filter(payment_status='completed').count()
+    ventas_totales = orders_list.filter(payment_status='completed').aggregate(
+        total=Sum('total_amount'))['total'] or 0
+    ordenes_pendientes = orders_list.filter(order_status__in=['pending', 'confirmed']).count()
+    
+    # Configurar paginación
+    paginator = Paginator(orders_list, per_page)
+    page_number = request.GET.get('page')
+    orders = paginator.get_page(page_number)
+    
+    # Estadísticas por período
+    hoy = datetime.now().date()
+    inicio_mes = hoy.replace(day=1)
+    ordenes_mes = orders_list.filter(created_at__date__gte=inicio_mes)
+    ventas_mes = ordenes_mes.filter(payment_status='completed').aggregate(
+        total=Sum('total_amount'))['total'] or 0
+    
+    context = {
+        'orders': orders,
+        'status_choices': Order.ORDER_STATUS_CHOICES,
+        'payment_status_choices': Order.PAYMENT_STATUS_CHOICES,
+        'current_status': status_filter,
+        'current_payment_status': payment_filter,
+        'search_query': search_query or '',
+        'date_from': date_from or '',
+        'date_to': date_to or '',
+        'per_page': per_page,
+        'stats': {
+            'total_ordenes': total_ordenes,
+            'ordenes_completadas': ordenes_completadas,
+            'ventas_totales': ventas_totales,
+            'ordenes_pendientes': ordenes_pendientes,
+            'ordenes_mes': ordenes_mes.count(),
+            'ventas_mes': ventas_mes,
+        }
+    }
+    
+    return render(request, 'dashboard-panel/contador/historial-transacciones.html', context)
+
+
+@role_required('contador')
+def detalle_transaccion_contador(request, order_id):
+    """Vista detallada de una transacción específica para el contador"""
+    order = get_object_or_404(Order, id=order_id)
+    
+    # Obtener items de la orden
+    order_items = order.items.all().select_related('product')
+    
+    # Calcular información adicional
+    total_items = sum(item.quantity for item in order_items)
+    subtotal = sum(item.quantity * item.price for item in order_items)
+    
+    # Información del cliente
+    customer = order.user
+    
+    context = {
+        'order': order,
+        'order_items': order_items,
+        'customer': customer,
+        'total_items': total_items,
+        'subtotal': subtotal,
+        'status_choices': Order.ORDER_STATUS_CHOICES,
+        'payment_status_choices': Order.PAYMENT_STATUS_CHOICES,
+    }
+    
+    return render(request, 'dashboard-panel/contador/detalle-transaccion.html', context)
+
+
+@role_required('contador')
+def exportar_transacciones_contador(request):
+    """Exportar historial de transacciones a CSV para el contador"""
+    from django.http import HttpResponse
+    import csv
+    from datetime import datetime
+    
+    # Obtener los mismos filtros que en el historial
+    status_filter = request.GET.get('status')
+    payment_filter = request.GET.get('payment_status')
+    search_query = request.GET.get('search')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    
+    # Aplicar filtros
+    orders_list = Order.objects.all().select_related('user')
+    
+    if status_filter:
+        orders_list = orders_list.filter(order_status=status_filter)
+    if payment_filter:
+        orders_list = orders_list.filter(payment_status=payment_filter)
+    if search_query:
+        orders_list = orders_list.filter(
+            Q(order_number__icontains=search_query) |
+            Q(user__username__icontains=search_query) |
+            Q(user__email__icontains=search_query)
+        )
+    if date_from:
+        try:
+            date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
+            orders_list = orders_list.filter(created_at__date__gte=date_from_obj)
+        except ValueError:
+            pass
+    if date_to:
+        try:
+            date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+            orders_list = orders_list.filter(created_at__date__lte=date_to_obj)
+        except ValueError:
+            pass
+    
+    # Crear respuesta CSV
+    response = HttpResponse(content_type='text/csv')
+    filename = f'historial_transacciones_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    # Crear writer CSV
+    writer = csv.writer(response)
+    
+    # Headers
+    writer.writerow([
+        'Número de Orden',
+        'Cliente',
+        'Email Cliente',
+        'Fecha de Creación',
+        'Estado de Orden',
+        'Estado de Pago',
+        'Total',
+        'Método de Pago',
+        'Fecha de Actualización'
+    ])
+    
+    # Datos de las órdenes
+    for order in orders_list.order_by('-created_at'):
+        writer.writerow([
+            order.order_number,
+            order.user.get_full_name() or order.user.username,
+            order.user.email,
+            order.created_at.strftime('%d/%m/%Y %H:%M'),
+            dict(Order.ORDER_STATUS_CHOICES).get(order.order_status, order.order_status),
+            dict(Order.PAYMENT_STATUS_CHOICES).get(order.payment_status, order.payment_status),
+            f'${order.total_amount:.2f}',
+            order.payment_method or 'No especificado',
+            order.updated_at.strftime('%d/%m/%Y %H:%M')
+        ])
+    
+    return response
 

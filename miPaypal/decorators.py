@@ -19,6 +19,25 @@ def admin_required(view_func=None, redirect_url='index-page'):
     return actual_decorator
 
 
+def admin_only_required(view_func=None, redirect_url='index-page'):
+    """
+    Decorador que verifica si el usuario es admin/staff pero NO contador
+    Los contadores solo deben tener acceso a funciones específicas de órdenes
+    """
+    def check_admin_not_contador(user):
+        return (user.is_authenticated and user.is_staff and 
+                getattr(user, 'rol', None) != 'contador')
+    
+    actual_decorator = user_passes_test(
+        check_admin_not_contador,
+        login_url=redirect_url
+    )
+    
+    if view_func:
+        return actual_decorator(view_func)
+    return actual_decorator
+
+
 def role_required(*roles, redirect_url='index-page'):
     """
     Decorador para verificar roles específicos

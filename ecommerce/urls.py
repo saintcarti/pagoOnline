@@ -57,6 +57,16 @@ urlpatterns = [
     path('bodeguero/reporte-inventario/', reporte_inventario, name='reporte-inventario'),
     path('bodeguero/historial-stock/', historial_stock, name='historial-stock'),
     
+    # Dashboard específico para contadores
+    path('contador/', dashboard_contador, name='dashboard-contador'),
+    path('contador/historial-transacciones/', historial_transacciones_contador, name='historial-transacciones-contador'),
+    path('contador/transaccion/<int:order_id>/', detalle_transaccion_contador, name='detalle-transaccion-contador'),
+    path('contador/exportar-transacciones/', exportar_transacciones_contador, name='exportar-transacciones-contador'),
+    
+    # Informes mensuales para administradores
+    path('dashboard/informes/', informes_mensuales, name='informes-mensuales'),
+    path('dashboard/informes/pdf/', generar_informe_pdf, name='generar-informe-pdf'),
+    
     # Gestión de Órdenes para Vendedores
     path('ordenes/', lista_ordenes_vendedor, name='lista-ordenes-vendedor'),
     path('ordenes/crear/', crear_orden_manual, name='crear-orden-manual'),

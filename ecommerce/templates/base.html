@@ -66,8 +66,8 @@ html {
           <a class="nav-link" href="{%url 'about-page'%}">Sobre Nosotros</a>
         </li>
         
-        <!-- Opciones adicionales para administradores -->
-        {% if user.is_staff %}
+        <!-- Opciones adicionales para administradores (excepto contador) -->
+        {% if user.is_staff and user.rol != 'contador' %}
         <li class="nav-item">
           <a class="nav-link" href="{%url 'dashboard-panel-page'%}">Panel Admin</a>
         </li>
@@ -106,14 +106,16 @@ html {
                 <li><a class="dropdown-item" href="{% url 'vista-bodega' %}">
                   <i class="bi bi-box-seam me-2"></i>Gestión de Inventario</a></li>
               {% endif %}
-              {% if user.is_staff or user.rol == 'vendedor' %}
+              {% if user.is_staff and user.rol in 'vendedor,bodeguero' or user.is_staff and user.rol not in 'contador,bodeguero,vendedor' %}
                 <li><a class="dropdown-item" href="{% url 'vista-bodega' %}">
                   <i class="bi bi-box-seam me-2"></i>Vista de Bodega</a></li>
                 <li><a class="dropdown-item" href="{% url 'lista-ordenes-vendedor' %}">
                   <i class="bi bi-clipboard-check me-2"></i>Gestión de Órdenes</a></li>
               {% endif %}
-              {% if user.is_staff %}<li><a class="dropdown-item" href="{%url 'dashboard-panel-page'%}">
+              {% if user.is_staff and user.rol != 'contador' %}<li><a class="dropdown-item" href="{%url 'dashboard-panel-page'%}">
                 <i class="bi bi-speedometer2 me-2"></i>Panel Admin</a></li>{% endif %}
+              {% if user.rol == 'contador' %}<li><a class="dropdown-item" href="{% url 'dashboard-contador' %}">
+                <i class="bi bi-clipboard-data me-2"></i>Dashboard Contador</a></li>{% endif %}
               <li><hr class="dropdown-divider"></li>
               <li>
                   <form method="post" action="{% url 'logout-fun' %}">

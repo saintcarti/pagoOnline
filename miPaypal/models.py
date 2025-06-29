@@ -166,6 +166,11 @@ class Order(models.Model):
         ('phone', 'Orden Telefónica'),
     ]
     
+    DELIVERY_METHOD_CHOICES = [
+        ('pickup', 'Retiro en Tienda'),
+        ('delivery', 'Delivery a Domicilio'),
+    ]
+    
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders')
     order_number = models.CharField(max_length=20, unique=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -184,9 +189,21 @@ class Order(models.Model):
     )
     
     # Información de envío
-    shipping_address = models.TextField()
-    shipping_city = models.CharField(max_length=100)
-    shipping_phone = models.CharField(max_length=15)
+    delivery_method = models.CharField(
+        max_length=20, 
+        choices=DELIVERY_METHOD_CHOICES, 
+        default='pickup',
+        verbose_name="Método de entrega"
+    )
+    delivery_cost = models.DecimalField(
+        max_digits=8, 
+        decimal_places=2, 
+        default=0.00,
+        verbose_name="Costo de envío"
+    )
+    shipping_address = models.TextField(blank=True, null=True)
+    shipping_city = models.CharField(max_length=100, blank=True, null=True)
+    shipping_phone = models.CharField(max_length=15, blank=True, null=True)
     
     # Notas y seguimiento
     notes = models.TextField(blank=True, null=True, verbose_name="Notas adicionales")
@@ -248,6 +265,22 @@ class Order(models.Model):
             'shipped': 'delivered',
         }
         return status_flow.get(self.order_status)
+    
+    def is_pickup_order(self):
+        """Verifica si es una orden para retiro en tienda"""
+        return self.delivery_method == 'pickup'
+    
+    def is_delivery_order(self):
+        """Verifica si es una orden para delivery"""
+        return self.delivery_method == 'delivery'
+    
+    def get_total_with_delivery(self):
+        """Obtiene el total incluyendo costo de delivery"""
+        return self.total_amount + self.delivery_cost
+    
+    def requires_shipping_info(self):
+        """Determina si requiere información de envío"""
+        return self.delivery_method == 'delivery'
     
     def get_status_progress_percentage(self):
         """Obtiene el porcentaje de progreso del estado"""
