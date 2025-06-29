@@ -1,0 +1,143 @@
+{% extends 'layouts/dashboard.html' %}
+{% load static %}
+
+{% block title %}Aprobar Pedido #{{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-check-circle"></i> Aprobar Pedido #{{ order.order_number }}</h3>
+                    <a href="{% url 'lista-ordenes-vendedor' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver a Órdenes
+                    </a>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Información del cliente -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Información del Cliente</h5>
+                            <p><strong>Cliente:</strong> {{ order.user.get_full_name|default:order.user.username }}</p>
+                            <p><strong>Email:</strong> {{ order.user.email }}</p>
+                            <p><strong>Teléfono:</strong> {{ order.shipping_phone }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Información del Pedido</h5>
+                            <p><strong>Fecha:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                            <p><strong>Estado:</strong> 
+                                <span class="badge badge-warning">{{ order.get_order_status_display }}</span>
+                            </p>
+                            <p><strong>Total:</strong> ${{ order.total_amount|floatformat:0 }}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Productos del pedido -->
+                    <h5>Productos del Pedido</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Precio Unitario</th>
+                                    <th>Cantidad</th>
+                                    <th>Stock Disponible</th>
+                                    <th>Subtotal</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order_items %}
+                                <tr>
+                                    <td>{{ item.product.name }}</td>
+                                    <td>${{ item.price|floatformat:0 }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>
+                                        {% if item.product.stock >= item.quantity %}
+                                            <span class="text-success">{{ item.product.stock }} disponibles</span>
+                                        {% else %}
+                                            <span class="text-danger">Solo {{ item.product.stock }} disponibles</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>${{ item.total_price|floatformat:0 }}</td>
+                                    <td>
+                                        {% if item.product.stock >= item.quantity %}
+                                            <span class="badge badge-success">OK</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">Sin Stock</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Información de entrega -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5>Información de Entrega</h5>
+                            <p><strong>Método:</strong> {{ order.get_delivery_method_display }}</p>
+                            <p><strong>Dirección:</strong> {{ order.shipping_address }}</p>
+                            {% if order.notes %}
+                                <p><strong>Notas:</strong> {{ order.notes }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Botones de acción -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="d-flex gap-3">
+                                <!-- Botón Aprobar -->
+                                <form method="post" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success btn-lg" 
+                                            onclick="return confirm('¿Está seguro de aprobar este pedido?')">
+                                        <i class="fas fa-check"></i> Aprobar Pedido
+                                    </button>
+                                </form>
+                                
+                                <!-- Botón Rechazar -->
+                                <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#rechazarModal">
+                                    <i class="fas fa-times"></i> Rechazar Pedido
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para rechazar pedido -->
+<div class="modal fade" id="rechazarModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rechazar Pedido</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form method="post" action="{% url 'rechazar-pedido-vendedor' order.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="motivo_rechazo">Motivo del rechazo *</label>
+                        <textarea class="form-control" name="motivo_rechazo" rows="3" 
+                                  placeholder="Escriba el motivo por el cual rechaza este pedido..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Rechazar Pedido</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

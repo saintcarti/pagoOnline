@@ -411,7 +411,7 @@ def delete_product(request, pk):
     return render(request, 'dashboard-panel/crud-products/confirm-delete.html', {'product': product})
 
 
-@admin_only_required
+@role_required('bodeguero', 'vendedor')
 def update_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     
@@ -806,12 +806,12 @@ def order_detail_admin(request, order_id):
     return render(request, 'dashboard-panel/crud-orders/order-detail.html', context)
 
 
-@login_required
+@role_required('bodeguero', 'vendedor')
 def vista_bodega(request):
-    """Vista de bodega para vendedores - muestra productos con información de stock"""
+    """Vista de bodega para vendedores y bodegueros - muestra productos con información de stock"""
     
-    # Verificar que el usuario sea vendedor, bodeguero o staff
-    if not (request.user.is_staff or request.user.rol in ['vendedor', 'bodeguero']):
+    # Verificar que el usuario sea vendedor o bodeguero (NO contador)
+    if not (request.user.is_staff and request.user.rol in ['vendedor', 'bodeguero']) and not (request.user.rol in ['vendedor', 'bodeguero']):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
         return redirect('index-page')
     
@@ -888,70 +888,14 @@ def vista_bodega(request):
     return render(request, 'dashboard-panel/bodega/vista-bodega.html', context)
 
 
-@login_required  
-def actualizar_stock(request, product_id):
-    """Vista para actualizar rápidamente el stock de un producto"""
-    
-    # Verificar permisos
-    if not (request.user.is_staff or request.user.rol in ['vendedor', 'bodeguero']):
-        messages.error(request, 'No tienes permisos para actualizar stock.')
-        return redirect('vista-bodega')
-    
-    product = get_object_or_404(Product, id=product_id)
-    
-    if request.method == 'POST':
-        try:
-            nuevo_stock = int(request.POST.get('stock', 0))
-            if nuevo_stock < 0:
-                messages.error(request, 'El stock no puede ser negativo.')
-            else:
-                stock_anterior = product.stock
-                
-                # Determinar tipo de movimiento
-                if nuevo_stock > stock_anterior:
-                    movement_type = 'entrada'
-                    reason = 'reabastecimiento'
-                    quantity = nuevo_stock - stock_anterior
-                elif nuevo_stock < stock_anterior:
-                    movement_type = 'ajuste'
-                    reason = 'inventario'
-                    quantity = stock_anterior - nuevo_stock
-                else:
-                    # No hay cambio
-                    messages.info(request, 'El stock no ha cambiado.')
-                    return redirect('vista-bodega')
-                
-                # Actualizar stock y registrar movimiento
-                product.stock = nuevo_stock
-                product.save()
-                
-                # Registrar movimiento de stock
-                StockMovement.register_movement(
-                    product=product,
-                    movement_type=movement_type,
-                    reason=reason,
-                    quantity=quantity,
-                    user=request.user,
-                    notes=f"Actualización manual de stock desde vista de bodega"
-                )
-                
-                messages.success(request, 
-                    f'Stock de "{product.name}" actualizado de {stock_anterior} a {nuevo_stock} unidades.')
-                
-        except ValueError:
-            messages.error(request, 'Por favor ingresa un número válido.')
-    
-    return redirect('vista-bodega')
-
-
 # Vistas para gestión de órdenes por vendedores
 
 @login_required
 def lista_ordenes_vendedor(request):
-    """Vista para que vendedores vean sus órdenes"""
+    """Vista para que vendedores y bodegueros vean las órdenes"""
     
-    # Verificar permisos
-    if not (request.user.is_staff or request.user.rol == 'vendedor'):
+    # Verificar permisos - ahora incluye bodegueros
+    if not (request.user.is_staff or request.user.rol in ['vendedor', 'bodeguero']):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
         return redirect('index-page')
     
@@ -1102,10 +1046,10 @@ def crear_orden_manual(request):
 
 @login_required
 def detalle_orden_vendedor(request, order_id):
-    """Vista de detalle de orden para vendedores"""
+    """Vista de detalle de orden para vendedores y bodegueros"""
     
-    # Verificar permisos
-    if not (request.user.is_staff or request.user.rol == 'vendedor'):
+    # Verificar permisos - ahora incluye bodegueros
+    if not (request.user.is_staff or request.user.rol in ['vendedor', 'bodeguero']):
         messages.error(request, 'No tienes permisos para ver esta orden.')
         return redirect('index-page')
     
@@ -1202,14 +1146,101 @@ def eliminar_item_orden(request, order_id, item_id):
     
     return redirect('detalle-orden-vendedor', order_id=orden.id)
 
+@login_required
+def aprobar_pedido_vendedor(request, order_id):
+    """Vista para que vendedores y bodegueros puedan aprobar pedidos"""
+    
+    # Verificar que el usuario sea vendedor, bodeguero o staff
+    if not (request.user.is_staff or request.user.rol in ['vendedor', 'bodeguero']):
+        messages.error(request, 'No tienes permisos para aprobar pedidos.')
+        return redirect('index-page')
+    
+    order = get_object_or_404(Order, id=order_id)
+    
+    # Solo se pueden aprobar órdenes pendientes
+    if order.order_status != 'pending':
+        messages.warning(request, 'Esta orden ya ha sido procesada.')
+        return redirect('lista-ordenes-vendedor')
+    
+    if request.method == 'POST':
+        # Aprobar el pedido
+        order.order_status = 'confirmed'
+        order.approved_by = request.user
+        order.approved_at = timezone.now()
+        order.save()
+        
+        # Registrar movimiento de stock
+        for item in order.items.all():
+            if hasattr(item.product, 'stock'):
+                # Reducir stock del producto
+                if item.product.stock >= item.quantity:
+                    item.product.stock -= item.quantity
+                    item.product.save()
+                    
+                    # Registrar movimiento de stock
+                    StockMovement.register_movement(
+                        product=item.product,
+                        movement_type='salida',
+                        reason='venta',
+                        quantity=item.quantity,
+                        user=request.user,
+                        order=order,
+                        notes=f'Venta aprobada - Orden #{order.order_number}'
+                    )
+                else:
+                    messages.warning(request, f'Stock insuficiente para {item.product.name}. Stock actual: {item.product.stock}')
+        
+        messages.success(request, f'Pedido #{order.order_number} aprobado exitosamente.')
+        return redirect('detalle-orden-vendedor', order_id=order.id)
+    
+    context = {
+        'order': order,
+        'order_items': order.items.all(),
+    }
+    
+    return render(request, 'dashboard-panel/ordenes-vendedor/aprobar-pedido.html', context)
+
+@login_required
+def rechazar_pedido_vendedor(request, order_id):
+    """Vista para que vendedores y bodegueros puedan rechazar pedidos"""
+    
+    # Verificar que el usuario sea vendedor, bodeguero o staff
+    if not (request.user.is_staff or request.user.rol in ['vendedor', 'bodeguero']):
+        messages.error(request, 'No tienes permisos para rechazar pedidos.')
+        return redirect('index-page')
+    
+    order = get_object_or_404(Order, id=order_id)
+    
+    # Solo se pueden rechazar órdenes pendientes
+    if order.order_status != 'pending':
+        messages.warning(request, 'Esta orden ya ha sido procesada.')
+        return redirect('lista-ordenes-vendedor')
+    
+    if request.method == 'POST':
+        motivo_rechazo = request.POST.get('motivo_rechazo', '').strip()
+        
+        if not motivo_rechazo:
+            messages.error(request, 'Debe proporcionar un motivo de rechazo.')
+            return redirect('aprobar-pedido-vendedor', order_id=order_id)
+        
+        # Rechazar el pedido
+        order.order_status = 'cancelled'
+        order.notes = f"RECHAZADO: {motivo_rechazo}"
+        order.save()
+        
+        messages.success(request, f'Pedido #{order.order_number} rechazado.')
+        return redirect('lista-ordenes-vendedor')
+    
+    return redirect('aprobar-pedido-vendedor', order_id=order_id)
+
 # Vistas específicas para bodegueros
 
 @login_required
 def dashboard_bodeguero(request):
     """Dashboard principal para bodegueros"""
     
-    # Verificar que el usuario sea bodeguero o staff
-    if not (request.user.is_staff or request.user.rol == 'bodeguero'):
+    # Verificar que el usuario sea bodeguero únicamente
+    if not (request.user.rol == 'bodeguero'):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
         return redirect('index-page')
     
@@ -1965,6 +1996,7 @@ def historial_transacciones_contador(request):
         'status_choices': Order.ORDER_STATUS_CHOICES,
         'payment_status_choices': Order.PAYMENT_STATUS_CHOICES,
         'current_status': status_filter,
+
         'current_payment_status': payment_filter,
         'search_query': search_query or '',
         'date_from': date_from or '',
@@ -2088,3 +2120,149 @@ def exportar_transacciones_contador(request):
     
     return response
 
+@login_required
+def view_cart(request):
+    """Vista del carrito con descuento del 13% si hay más de 4 productos"""
+    cart = request.session.get('cart', {})
+    cart_items = []
+    total = 0
+    total_items = 0
+    
+    for product_id, quantity in cart.items():
+        try:
+            product = Product.objects.get(id=product_id)
+            subtotal = product.price * quantity
+            total += subtotal
+            total_items += quantity
+            
+            cart_items.append({
+                'product': product,
+                'quantity': quantity,
+                'subtotal': subtotal
+            })
+        except Product.DoesNotExist:
+            # Remover producto que ya no existe
+            del cart[product_id]
+            request.session['cart'] = cart
+    
+    # Aplicar descuento del 13% si hay más de 4 productos
+    discount_percentage = 0
+    discount_amount = 0
+    final_total = total
+    
+    if total_items > 4:
+        discount_percentage = 13
+        discount_amount = total * 0.13
+        final_total = total - discount_amount
+    
+    # Actualizar contador del carrito en la sesión
+    request.session['cart_count'] = total_items
+    
+    context = {
+        'cart_items': cart_items,
+        'total': total,
+        'total_items': total_items,
+        'discount_percentage': discount_percentage,
+        'discount_amount': discount_amount,
+        'final_total': final_total,
+        'has_discount': total_items > 4,
+    }
+    
+    return render(request, 'ecommerce/cart.html', context)
+
+
+@login_required
+def add_to_cart(request, product_id):
+    """Agregar producto al carrito"""
+    if request.method == 'POST':
+        quantity = int(request.POST.get('quantity', 1))
+        cart = request.session.get('cart', {})
+        
+        # Verificar stock disponible
+        try:
+            product = Product.objects.get(id=product_id)
+            current_cart_quantity = cart.get(str(product_id), 0)
+            total_requested = current_cart_quantity + quantity
+            
+            if total_requested > product.stock:
+                messages.error(request, f'Stock insuficiente. Solo hay {product.stock} unidades disponibles.')
+                return redirect('products-page')
+            
+            # Agregar al carrito
+            cart[str(product_id)] = total_requested
+            request.session['cart'] = cart
+            
+            # Actualizar contador del carrito
+            cart_count = sum(cart.values())
+            request.session['cart_count'] = cart_count
+            
+            messages.success(request, f'{product.name} agregado al carrito.')
+            
+        except Product.DoesNotExist:
+            messages.error(request, 'Producto no encontrado.')
+    
+    return redirect('products-page')
+
+
+@login_required
+def update_cart_item(request, product_id):
+    """Actualizar cantidad de un producto en el carrito"""
+    if request.method == 'POST':
+        quantity = int(request.POST.get('quantity', 1))
+        cart = request.session.get('cart', {})
+        
+        try:
+            product = Product.objects.get(id=product_id)
+            
+            if quantity > product.stock:
+                messages.error(request, f'Stock insuficiente. Solo hay {product.stock} unidades disponibles.')
+            elif quantity > 0:
+                cart[str(product_id)] = quantity
+                messages.success(request, 'Carrito actualizado.')
+            else:
+                # Remover del carrito si cantidad es 0
+                cart.pop(str(product_id), None)
+                messages.success(request, f'{product.name} removido del carrito.')
+            
+            request.session['cart'] = cart
+            
+            # Actualizar contador del carrito
+            cart_count = sum(cart.values())
+            request.session['cart_count'] = cart_count
+            
+        except Product.DoesNotExist:
+            messages.error(request, 'Producto no encontrado.')
+    
+    return redirect('view_cart')
+
+
+@login_required
+def remove_from_cart(request, product_id):
+    """Remover producto del carrito"""
+    cart = request.session.get('cart', {})
+    
+    if str(product_id) in cart:
+        try:
+            product = Product.objects.get(id=product_id)
+            cart.pop(str(product_id))
+            request.session['cart'] = cart
+            
+            # Actualizar contador del carrito
+            cart_count = sum(cart.values())
+            request.session['cart_count'] = cart_count
+            
+            messages.success(request, f'{product.name} removido del carrito.')
+        except Product.DoesNotExist:
+            cart.pop(str(product_id))
+            request.session['cart'] = cart
+    
+    return redirect('view_cart')
+
+
+@login_required
+def clear_cart(request):
+    """Limpiar todo el carrito"""
+    request.session['cart'] = {}
+    request.session['cart_count'] = 0
+    messages.success(request, 'Carrito vaciado.')
+    return redirect('view_cart')

@@ -221,7 +221,7 @@
                                         <i class="fas fa-truck" style="margin-right: 0.5rem !important;"></i>
                                         Delivery a Domicilio
                                     </div>
-                                    <div class="option-price" style="color: #007bff !important; font-weight: 600 !important; font-size: 1.2rem !important;">$3.000</div>
+                                    <div class="option-price" style="color: #007bff !important; font-weight: 600 !important; font-size: 1.2rem !important;">$3</div>
                                     <div class="option-description" style="color: #666666 !important; font-size: 0.9rem !important; margin-top: 0.5rem !important;">
                                         Recibe tu pedido en la comodidad de tu hogar
                                     </div>
@@ -319,13 +319,14 @@
                 <span style="color: white !important;">Subtotal productos:</span>
                 <span style="color: white !important;" id="subtotal">${{ total }}</span>
             </div>
+            
             <div style="display: flex !important; justify-content: space-between !important; margin-bottom: 1rem !important;">
                 <span style="color: white !important;">Costo de envío:</span>
                 <span style="color: white !important;" id="deliveryCost">{% if delivery_cost > 0 %}${{ delivery_cost }}{% else %}GRATIS{% endif %}</span>
             </div>
             <hr style="border-color: rgba(255,255,255,0.3) !important;">
             <p class="total-label">Total a Pagar</p>
-            <p class="total-amount" id="totalAmount">${{ total_with_delivery|default:total }}</p>
+            <p class="total-amount" id="totalAmount">${{ total_with_delivery }}</p>
         </div>
         
         <div class="payment-container">
@@ -366,7 +367,7 @@
     <script>
         // Variables globales
         const subtotalAmount = parseFloat({{ total }});
-        const deliveryCost = 3000;
+        const deliveryCost = 3;
         
         // Mostrar loading al enviar el formulario de PayPal
         document.addEventListener('DOMContentLoaded', function() {

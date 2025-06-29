@@ -49,7 +49,6 @@ urlpatterns = [
     
     # Vista de Bodega - para vendedores y bodegueros
     path('bodega/', vista_bodega, name='vista-bodega'),
-    path('bodega/actualizar-stock/<int:product_id>/', actualizar_stock, name='actualizar-stock'),
     
     # Dashboard y funciones específicas para bodegueros
     path('bodeguero/', dashboard_bodeguero, name='dashboard-bodeguero'),
@@ -72,4 +71,6 @@ urlpatterns = [
     path('ordenes/crear/', crear_orden_manual, name='crear-orden-manual'),
     path('ordenes/<int:order_id>/', detalle_orden_vendedor, name='detalle-orden-vendedor'),
     path('ordenes/<int:order_id>/eliminar-item/<int:item_id>/', eliminar_item_orden, name='eliminar-item-orden'),
+    path('ordenes/<int:order_id>/aprobar/', aprobar_pedido_vendedor, name='aprobar-pedido-vendedor'),
+    path('ordenes/<int:order_id>/rechazar/', rechazar_pedido_vendedor, name='rechazar-pedido-vendedor'),
 ]

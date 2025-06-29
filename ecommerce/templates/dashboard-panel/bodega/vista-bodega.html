@@ -178,23 +178,12 @@
                                                 {% endfor %}
                                             </td>
                                             <td>
-                                                <strong>${{ product.price|floatformat:0 }}</strong>
+                                                <strong class="h6">${{ product.price|floatformat:0 }}</strong>
                                             </td>
                                             <td>
-                                                <form method="POST" action="{% url 'actualizar-stock' product.id %}" class="d-inline">
-                                                    {% csrf_token %}
-                                                    <div class="input-group input-group-sm">
-                                                        <input type="number" 
-                                                               class="form-control" 
-                                                               name="stock" 
-                                                               value="{{ product.stock }}"
-                                                               min="0"
-                                                               style="width: 70px;">
-                                                        <button type="submit" class="btn btn-outline-primary btn-sm">
-                                                            <i class="fas fa-save"></i>
-                                                        </button>
-                                                    </div>
-                                                </form>
+                                                <span class="fw-bold {% if product.stock == 0 %}text-danger{% elif product.stock <= 5 %}text-warning{% else %}text-success{% endif %}">
+                                                    {{ product.stock }}
+                                                </span>
                                             </td>
                                             <td>
                                                 {% if product.stock == 0 %}
@@ -208,20 +197,11 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                <div class="btn-group btn-group-sm">
-                                                    <a href="{% url 'update-product' product.id %}" 
-                                                       class="btn btn-outline-primary btn-sm" 
-                                                       title="Editar producto">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    {% if product.stock == 0 %}
-                                                        <button class="btn btn-outline-success btn-sm" 
-                                                                onclick="setStock({{ product.id }}, 10)"
-                                                                title="Reabastecer">
-                                                            <i class="fas fa-plus"></i>
-                                                        </button>
-                                                    {% endif %}
-                                                </div>
+                                                <a href="{% url 'update-product' product.id %}" 
+                                                   class="btn btn-outline-primary btn-sm" 
+                                                   title="Editar producto">
+                                                    <i class="fas fa-edit"></i> Ver Detalles
+                                                </a>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -278,30 +258,6 @@
     </div>
 </div>
 
-<script>
-function setStock(productId, stockValue) {
-    // Función para establecer un stock específico rápidamente
-    const form = document.querySelector(`form[action*="${productId}"] input[name="stock"]`);
-    if (form) {
-        form.value = stockValue;
-        form.closest('form').submit();
-    }
-}
-
-// Auto-submit del formulario de stock al presionar Enter
-document.addEventListener('DOMContentLoaded', function() {
-    const stockInputs = document.querySelectorAll('input[name="stock"]');
-    stockInputs.forEach(input => {
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this.closest('form').submit();
-            }
-        });
-    });
-});
-</script>
-
 <style>
 .table-hover tbody tr:hover {
     background-color: rgba(0,0,0,.075);
@@ -314,10 +270,6 @@ document.addEventListener('DOMContentLoaded', function() {
 .btn-group-sm > .btn, .btn-sm {
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
-}
-
-.input-group-sm > .form-control {
-    padding: 0.25rem 0.5rem;
 }
 
 .pagination {

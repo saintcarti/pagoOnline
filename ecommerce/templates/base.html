@@ -66,8 +66,8 @@ html {
           <a class="nav-link" href="{%url 'about-page'%}">Sobre Nosotros</a>
         </li>
         
-        <!-- Opciones adicionales para administradores (excepto contador) -->
-        {% if user.is_staff and user.rol != 'contador' %}
+        <!-- Opciones adicionales para administradores (excepto contador y bodeguero) -->
+        {% if user.is_staff and user.rol != 'contador' and user.rol != 'bodeguero' %}
         <li class="nav-item">
           <a class="nav-link" href="{%url 'dashboard-panel-page'%}">Panel Admin</a>
         </li>
@@ -100,22 +100,33 @@ html {
                 <i class="bi bi-person me-2"></i>Mi Perfil</a></li>
               <li><a class="dropdown-item" href="{% url 'user-order-history' %}">
                 <i class="bi bi-clock-history me-2"></i>Mis Compras</a></li>
-              {% if user.rol == 'bodeguero' %}
+              
+              <!-- Opciones específicas por rol -->
+              {% if user.rol == 'vendedor' %}
+                <li><a class="dropdown-item" href="{% url 'lista-ordenes-vendedor' %}">
+                  <i class="bi bi-clipboard-check me-2"></i>Gestión de Órdenes</a></li>
+                <li><a class="dropdown-item" href="{% url 'vista-bodega' %}">
+                  <i class="bi bi-box-seam me-2"></i>Vista de Bodega</a></li>
+              {% elif user.rol == 'bodeguero' %}
                 <li><a class="dropdown-item" href="{% url 'dashboard-bodeguero' %}">
                   <i class="bi bi-boxes me-2"></i>Dashboard Bodega</a></li>
                 <li><a class="dropdown-item" href="{% url 'vista-bodega' %}">
-                  <i class="bi bi-box-seam me-2"></i>Gestión de Inventario</a></li>
-              {% endif %}
-              {% if user.is_staff and user.rol in 'vendedor,bodeguero' or user.is_staff and user.rol not in 'contador,bodeguero,vendedor' %}
+                  <i class="bi bi-box-seam me-2"></i>Vista de Bodega</a></li>
+                <li><a class="dropdown-item" href="{% url 'lista-ordenes-vendedor' %}">
+                  <i class="bi bi-clipboard-check me-2"></i>Gestión de Órdenes</a></li>
+              {% elif user.rol == 'contador' %}
+                <li><a class="dropdown-item" href="{% url 'dashboard-contador' %}">
+                  <i class="bi bi-clipboard-data me-2"></i>Dashboard Contador</a></li>
+              {% elif user.is_staff %}
+                <!-- Administradores generales -->
+                <li><a class="dropdown-item" href="{% url 'dashboard-panel-page' %}">
+                  <i class="bi bi-speedometer2 me-2"></i>Panel Admin</a></li>
                 <li><a class="dropdown-item" href="{% url 'vista-bodega' %}">
                   <i class="bi bi-box-seam me-2"></i>Vista de Bodega</a></li>
                 <li><a class="dropdown-item" href="{% url 'lista-ordenes-vendedor' %}">
                   <i class="bi bi-clipboard-check me-2"></i>Gestión de Órdenes</a></li>
               {% endif %}
-              {% if user.is_staff and user.rol != 'contador' %}<li><a class="dropdown-item" href="{%url 'dashboard-panel-page'%}">
-                <i class="bi bi-speedometer2 me-2"></i>Panel Admin</a></li>{% endif %}
-              {% if user.rol == 'contador' %}<li><a class="dropdown-item" href="{% url 'dashboard-contador' %}">
-                <i class="bi bi-clipboard-data me-2"></i>Dashboard Contador</a></li>{% endif %}
+              
               <li><hr class="dropdown-divider"></li>
               <li>
                   <form method="post" action="{% url 'logout-fun' %}">

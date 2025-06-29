@@ -69,11 +69,12 @@ def view_cart(request):
     cart = get_or_create_cart(request)
     cart_items = cart.cartitem_set.all()
     total = sum(item.total_price() for item in cart_items)
+    total_items = sum(item.quantity for item in cart_items)
     
     context = {
         'cart_items': cart_items,
         'total': total,
-        # cart_count estará disponible automáticamente por el procesador de contexto
+        'total_items': total_items,
     }
     return render(request, 'paypal/cart.html', context)
 
@@ -86,6 +87,7 @@ def checkout(request):
         return redirect('view_cart')
     
     total = sum(item.total_price() for item in cart_items)
+    total_items = sum(item.quantity for item in cart_items)
     item_names = ", ".join([item.product.name for item in cart_items])
     
     # Obtener información de entrega desde la sesión o crear nueva
@@ -116,6 +118,7 @@ def checkout(request):
     context = {
         'cart_items': cart_items,
         'total': total,
+        'total_items': total_items,
         'delivery_cost': delivery_cost,
         'total_with_delivery': total_with_delivery,
         'delivery_info': delivery_info,
