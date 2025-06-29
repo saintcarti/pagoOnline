@@ -124,22 +124,42 @@
                             </div>
                         </div>
 
-                        <!-- Dirección -->
-                        <div class="mb-3">
-                            <label for="direccion" class="form-label fw-semibold" style="color: #5A3E2B;">
-                                <i class="bi bi-geo-alt me-2"></i>Dirección
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text border-end-0" style="background: transparent; border-color: #dee2e6; border-radius: 10px 0 0 10px;">
-                                    <i class="bi bi-geo-alt text-muted"></i>
-                                </span>
-                                <textarea name="direccion" 
-                                          id="direccion" 
-                                          rows="2"
-                                          class="form-control border-start-0 ps-0" 
-                                          placeholder="Calle, número, comuna, región..."
-                                          style="border-radius: 0 10px 10px 0; border-color: #dee2e6;"
-                                          required>{{ form.direccion.value|default:'' }}</textarea>
+                        <!-- Dirección y Ciudad -->
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label for="direccion" class="form-label fw-semibold" style="color: #5A3E2B;">
+                                    <i class="bi bi-geo-alt me-2"></i>Dirección
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-end-0" style="background: transparent; border-color: #dee2e6; border-radius: 10px 0 0 10px;">
+                                        <i class="bi bi-geo-alt text-muted"></i>
+                                    </span>
+                                    <textarea name="direccion" 
+                                              id="direccion" 
+                                              rows="2"
+                                              class="form-control border-start-0 ps-0" 
+                                              placeholder="Calle, número, comuna..."
+                                              style="border-radius: 0 10px 10px 0; border-color: #dee2e6;"
+                                              required>{{ form.direccion.value|default:'' }}</textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="ciudad" class="form-label fw-semibold" style="color: #5A3E2B;">
+                                    <i class="bi bi-building me-2"></i>Ciudad
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-end-0" style="background: transparent; border-color: #dee2e6; border-radius: 10px 0 0 10px;">
+                                        <i class="bi bi-building text-muted"></i>
+                                    </span>
+                                    <input type="text" 
+                                           name="ciudad" 
+                                           id="ciudad" 
+                                           class="form-control border-start-0 ps-0" 
+                                           placeholder="Santiago, Valparaíso..."
+                                           style="border-radius: 0 10px 10px 0; border-color: #dee2e6;"
+                                           value="{{ form.ciudad.value|default:'' }}"
+                                           required>
+                                </div>
                             </div>
                         </div>
 
@@ -382,17 +402,33 @@ document.addEventListener('DOMContentLoaded', function() {
     // Validación y formateo de RUT
     const rutInput = document.getElementById('rut');
     rutInput.addEventListener('input', function() {
+        // Limpiar entrada: solo números y K
         let rut = this.value.replace(/[^0-9kK]/g, '');
+        
+        // Convertir a mayúsculas
+        rut = rut.toUpperCase();
+        
+        // Formatear según la longitud
         if (rut.length > 1) {
-            rut = rut.slice(0, -1) + '-' + rut.slice(-1);
+            // Separar dígito verificador
+            const body = rut.slice(0, -1);
+            const dv = rut.slice(-1);
+            
+            let formattedBody = body;
+            
+            // Agregar puntos cada 3 dígitos desde el final
+            if (body.length > 3) {
+                formattedBody = body.slice(0, -3) + '.' + body.slice(-3);
+            }
+            if (body.length > 6) {
+                formattedBody = body.slice(0, -6) + '.' + body.slice(-6, -3) + '.' + body.slice(-3);
+            }
+            
+            // Unir con guión
+            rut = formattedBody + '-' + dv;
         }
-        if (rut.length > 6) {
-            rut = rut.slice(0, -6) + '.' + rut.slice(-6, -4) + '.' + rut.slice(-4);
-        }
-        if (rut.length > 3 && rut.length <= 6) {
-            rut = rut.slice(0, -4) + '.' + rut.slice(-4);
-        }
-        this.value = rut.toUpperCase();
+        
+        this.value = rut;
     });
 
     // Formateo de teléfono

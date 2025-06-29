@@ -237,7 +237,7 @@
 
                         <div class="row">
                             <!-- Dirección -->
-                            <div class="col-12 mb-3">
+                            <div class="col-md-8 mb-3">
                                 <label for="id_direccion" class="form-label">
                                     <i class="fas fa-map-marker-alt field-icon"></i>Dirección
                                 </label>
@@ -245,6 +245,19 @@
                                 {% if form.direccion.errors %}
                                     <div class="text-danger mt-1">
                                         <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.direccion.errors.0 }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Ciudad -->
+                            <div class="col-md-4 mb-3">
+                                <label for="id_ciudad" class="form-label">
+                                    <i class="fas fa-city field-icon"></i>Ciudad
+                                </label>
+                                {{ form.ciudad }}
+                                {% if form.ciudad.errors %}
+                                    <div class="text-danger mt-1">
+                                        <small><i class="fas fa-exclamation-circle me-1"></i>{{ form.ciudad.errors.0 }}</small>
                                     </div>
                                 {% endif %}
                             </div>

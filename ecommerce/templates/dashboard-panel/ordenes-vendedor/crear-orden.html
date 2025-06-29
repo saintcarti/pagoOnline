@@ -1,0 +1,390 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear Orden Manual - Ferremas{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #5A3E2B 0%, #8B4513 100%); color: white;">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="h3 mb-0">
+                                <i class="fas fa-plus-circle me-2"></i>Crear Orden Manual
+                            </h1>
+                            <p class="mb-0 text-white-50">Registrar una nueva orden de venta manual</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <a href="{% url 'lista-ordenes-vendedor' %}" class="btn btn-light">
+                                <i class="fas fa-arrow-left me-1"></i>Volver a Órdenes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Formulario de orden -->
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-invoice me-2"></i>Información de la Orden
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="orden-form">
+                        {% csrf_token %}
+                        
+                        <!-- Cliente -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.user.id_for_label }}" class="form-label">
+                                    <i class="fas fa-user me-1"></i>Cliente *
+                                </label>
+                                {{ form.user }}
+                                {% if form.user.errors %}
+                                    <div class="text-danger small mt-1">{{ form.user.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.order_type.id_for_label }}" class="form-label">
+                                    <i class="fas fa-tag me-1"></i>Tipo de Orden
+                                </label>
+                                {{ form.order_type }}
+                                {% if form.order_type.errors %}
+                                    <div class="text-danger small mt-1">{{ form.order_type.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Información de envío -->
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label for="{{ form.shipping_address.id_for_label }}" class="form-label">
+                                    <i class="fas fa-map-marker-alt me-1"></i>Dirección de Envío *
+                                </label>
+                                {{ form.shipping_address }}
+                                {% if form.shipping_address.errors %}
+                                    <div class="text-danger small mt-1">{{ form.shipping_address.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.shipping_city.id_for_label }}" class="form-label">
+                                    <i class="fas fa-city me-1"></i>Ciudad *
+                                </label>
+                                {{ form.shipping_city }}
+                                {% if form.shipping_city.errors %}
+                                    <div class="text-danger small mt-1">{{ form.shipping_city.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.shipping_phone.id_for_label }}" class="form-label">
+                                    <i class="fas fa-phone me-1"></i>Teléfono de Contacto *
+                                </label>
+                                {{ form.shipping_phone }}
+                                {% if form.shipping_phone.errors %}
+                                    <div class="text-danger small mt-1">{{ form.shipping_phone.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.estimated_delivery.id_for_label }}" class="form-label">
+                                    <i class="fas fa-calendar me-1"></i>Entrega Estimada
+                                </label>
+                                {{ form.estimated_delivery }}
+                                {% if form.estimated_delivery.errors %}
+                                    <div class="text-danger small mt-1">{{ form.estimated_delivery.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Notas -->
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                <i class="fas fa-sticky-note me-1"></i>Notas Adicionales
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger small mt-1">{{ form.notes.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Total estimado -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h5 class="mb-2">Total Estimado</h5>
+                                        <h3 id="total-amount" class="text-primary mb-0">$0</h3>
+                                        <small class="text-muted">Se calculará automáticamente</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>Crear Orden
+                            </button>
+                            <a href="{% url 'lista-ordenes-vendedor' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de productos -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-box me-2"></i>Productos Disponibles
+                    </h6>
+                </div>
+                <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+                    {% if productos %}
+                        <div class="list-group list-group-flush">
+                            {% for producto in productos %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">{{ producto.name }}</h6>
+                                            <p class="mb-1 text-muted small">{{ producto.description|truncatewords:8 }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge bg-info">${{ producto.price|floatformat:0 }}</span>
+                                                <span class="badge {% if producto.stock > 10 %}bg-success{% elif producto.stock > 0 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                    Stock: {{ producto.stock }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {% if producto.stock > 0 %}
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-primary ms-2"
+                                                    onclick="agregarProducto({{ producto.id }}, '{{ producto.name }}', {{ producto.price }}, {{ producto.stock }})">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-box-open text-muted" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2">No hay productos disponibles</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Items de la orden -->
+            <div class="card shadow-sm border-0 mt-3">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-shopping-cart me-2"></i>Items de la Orden
+                        <span id="items-count" class="badge bg-light text-dark ms-2">0</span>
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div id="orden-items" class="list-group list-group-flush">
+                        <div id="empty-items" class="text-center py-4">
+                            <i class="fas fa-shopping-cart text-muted" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2">No hay productos agregados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let ordenItems = [];
+let itemCounter = 0;
+
+function agregarProducto(productId, productName, productPrice, productStock) {
+    // Verificar si el producto ya está en la lista
+    let existingItem = ordenItems.find(item => item.product_id === productId);
+    
+    if (existingItem) {
+        if (existingItem.quantity < productStock) {
+            existingItem.quantity += 1;
+            actualizarItemDisplay(existingItem);
+        } else {
+            alert('No hay suficiente stock disponible');
+        }
+    } else {
+        let newItem = {
+            id: ++itemCounter,
+            product_id: productId,
+            product_name: productName,
+            price: productPrice,
+            quantity: 1,
+            max_stock: productStock
+        };
+        ordenItems.push(newItem);
+        agregarItemDisplay(newItem);
+    }
+    
+    actualizarTotal();
+    actualizarContador();
+}
+
+function agregarItemDisplay(item) {
+    const emptyDiv = document.getElementById('empty-items');
+    if (emptyDiv) {
+        emptyDiv.style.display = 'none';
+    }
+    
+    const itemsContainer = document.getElementById('orden-items');
+    const itemHtml = `
+        <div class="list-group-item" id="item-${item.id}">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="flex-grow-1">
+                    <h6 class="mb-1">${item.product_name}</h6>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="input-group input-group-sm" style="width: 80px;">
+                            <button class="btn btn-outline-secondary" type="button" onclick="cambiarCantidad(${item.id}, -1)">-</button>
+                            <input type="number" class="form-control text-center" id="qty-${item.id}" value="${item.quantity}" min="1" max="${item.max_stock}" onchange="cambiarCantidadDirecta(${item.id}, this.value)">
+                            <button class="btn btn-outline-secondary" type="button" onclick="cambiarCantidad(${item.id}, 1)">+</button>
+                        </div>
+                        <span class="text-muted">× $${item.price}</span>
+                    </div>
+                    <small class="text-primary">Subtotal: $<span id="subtotal-${item.id}">${item.quantity * item.price}</span></small>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarItem(${item.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            <input type="hidden" name="items" value='{"product_id": ${item.product_id}, "quantity": ${item.quantity}}'>
+        </div>
+    `;
+    itemsContainer.insertAdjacentHTML('beforeend', itemHtml);
+}
+
+function actualizarItemDisplay(item) {
+    const qtyInput = document.getElementById(`qty-${item.id}`);
+    const subtotalSpan = document.getElementById(`subtotal-${item.id}`);
+    const hiddenInput = document.querySelector(`#item-${item.id} input[name="items"]`);
+    
+    if (qtyInput) qtyInput.value = item.quantity;
+    if (subtotalSpan) subtotalSpan.textContent = item.quantity * item.price;
+    if (hiddenInput) hiddenInput.value = JSON.stringify({product_id: item.product_id, quantity: item.quantity});
+}
+
+function cambiarCantidad(itemId, delta) {
+    let item = ordenItems.find(i => i.id === itemId);
+    if (item) {
+        let newQuantity = item.quantity + delta;
+        if (newQuantity >= 1 && newQuantity <= item.max_stock) {
+            item.quantity = newQuantity;
+            actualizarItemDisplay(item);
+            actualizarTotal();
+        }
+    }
+}
+
+function cambiarCantidadDirecta(itemId, value) {
+    let item = ordenItems.find(i => i.id === itemId);
+    if (item) {
+        let newQuantity = parseInt(value);
+        if (newQuantity >= 1 && newQuantity <= item.max_stock) {
+            item.quantity = newQuantity;
+            actualizarItemDisplay(item);
+            actualizarTotal();
+        } else {
+            // Revertir al valor anterior
+            document.getElementById(`qty-${itemId}`).value = item.quantity;
+        }
+    }
+}
+
+function eliminarItem(itemId) {
+    ordenItems = ordenItems.filter(item => item.id !== itemId);
+    document.getElementById(`item-${itemId}`).remove();
+    
+    if (ordenItems.length === 0) {
+        document.getElementById('empty-items').style.display = 'block';
+    }
+    
+    actualizarTotal();
+    actualizarContador();
+}
+
+function actualizarTotal() {
+    let total = ordenItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+    document.getElementById('total-amount').textContent = `$${total}`;
+}
+
+function actualizarContador() {
+    document.getElementById('items-count').textContent = ordenItems.length;
+}
+
+// Al enviar el formulario, agregar los items como JSON
+document.getElementById('orden-form').addEventListener('submit', function(e) {
+    if (ordenItems.length === 0) {
+        e.preventDefault();
+        alert('Debe agregar al menos un producto a la orden');
+        return;
+    }
+    
+    // Crear un input hidden con todos los items
+    let itemsInput = document.createElement('input');
+    itemsInput.type = 'hidden';
+    itemsInput.name = 'order_items';
+    itemsInput.value = JSON.stringify(ordenItems.map(item => ({
+        product_id: item.product_id,
+        quantity: item.quantity
+    })));
+    
+    this.appendChild(itemsInput);
+});
+</script>
+
+<style>
+.form-control, .form-select {
+    border-radius: 8px;
+}
+
+.card {
+    border-radius: 12px;
+}
+
+.btn {
+    border-radius: 8px;
+}
+
+.list-group-item {
+    border-left: none;
+    border-right: none;
+}
+
+.list-group-item:first-child {
+    border-top: none;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+#orden-items {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.input-group-sm .form-control {
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %}

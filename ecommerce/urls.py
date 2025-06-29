@@ -45,4 +45,21 @@ urlpatterns = [
     # CRUD Orders - para administradores
     path('dashboard/orders/', list_orders, name='list-orders'),
     path('dashboard/orders/view/<int:order_id>/', order_detail_admin, name='order-detail-admin'),
+    path('dashboard/orders/<int:order_id>/marcar-entregada/', marcar_orden_entregada, name='marcar-orden-entregada'),
+    
+    # Vista de Bodega - para vendedores y bodegueros
+    path('bodega/', vista_bodega, name='vista-bodega'),
+    path('bodega/actualizar-stock/<int:product_id>/', actualizar_stock, name='actualizar-stock'),
+    
+    # Dashboard y funciones específicas para bodegueros
+    path('bodeguero/', dashboard_bodeguero, name='dashboard-bodeguero'),
+    path('bodeguero/ajuste-stock-masivo/', ajuste_stock_masivo, name='ajuste-stock-masivo'),
+    path('bodeguero/reporte-inventario/', reporte_inventario, name='reporte-inventario'),
+    path('bodeguero/historial-stock/', historial_stock, name='historial-stock'),
+    
+    # Gestión de Órdenes para Vendedores
+    path('ordenes/', lista_ordenes_vendedor, name='lista-ordenes-vendedor'),
+    path('ordenes/crear/', crear_orden_manual, name='crear-orden-manual'),
+    path('ordenes/<int:order_id>/', detalle_orden_vendedor, name='detalle-orden-vendedor'),
+    path('ordenes/<int:order_id>/eliminar-item/<int:item_id>/', eliminar_item_orden, name='eliminar-item-orden'),
 ]

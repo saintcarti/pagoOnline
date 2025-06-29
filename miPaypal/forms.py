@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import Product,CustomUser,Category,Brand
+from .models import Product,CustomUser,Category,Brand,Order,OrderItem,Order,OrderItem
 from django.contrib.auth.forms import UserCreationForm
 
 class ProductForm(forms.ModelForm):
@@ -125,14 +125,23 @@ class CustomUserCreationForm(UserCreationForm):
         widget=forms.Textarea(attrs={
             'class': 'form-control',
             'rows': 2,
-            'placeholder': 'Calle, número, comuna, región...'
+            'placeholder': 'Calle, número, comuna...'
         }),
-        help_text='Dirección completa de entrega'
+        help_text='Dirección sin incluir ciudad'
+    )
+    ciudad = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Santiago, Valparaíso, Concepción...'
+        }),
+        help_text='Ciudad donde vives'
     )
 
     class Meta:
         model = CustomUser
-        fields = ('first_name', 'last_name', 'username', 'email', 'password1', 'password2', 'rut', 'telefono', 'direccion')
+        fields = ('first_name', 'last_name', 'username', 'email', 'password1', 'password2', 'rut', 'telefono', 'direccion', 'ciudad')
         
     def clean_rut(self):
         rut = self.cleaned_data.get('rut')
@@ -210,13 +219,21 @@ class StaffRegistrationForm(UserCreationForm):
         widget=forms.Textarea(attrs={
             'class': 'form-control',
             'rows': 3,
-            'placeholder': 'Dirección completa del usuario'
+            'placeholder': 'Dirección del usuario'
+        })
+    )
+    ciudad = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Ciudad del usuario'
         })
     )
 
     class Meta:
         model = CustomUser
-        fields = ('first_name', 'last_name', 'username', 'email', 'password1', 'password2', 'rol', 'rut', 'telefono', 'direccion', 'is_active')
+        fields = ('first_name', 'last_name', 'username', 'email', 'password1', 'password2', 'rol', 'rut', 'telefono', 'direccion', 'ciudad', 'is_active')
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -240,7 +257,90 @@ class StaffRegistrationForm(UserCreationForm):
 class UserEditForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'first_name', 'last_name', 'rol', 'rut', 'telefono', 'direccion', 'is_active']
+        fields = ['username', 'email', 'first_name', 'last_name', 'rol', 'rut', 'telefono', 'direccion', 'ciudad', 'is_active']
         widgets = {
             'direccion': forms.Textarea(attrs={'rows': 3}),
         }
+
+
+# Formularios para órdenes
+
+class ManualOrderForm(forms.ModelForm):
+    """Formulario para crear órdenes manuales por vendedores"""
+    
+    class Meta:
+        model = Order
+        fields = [
+            'user', 'order_type', 'payment_status', 'shipping_address', 
+            'shipping_city', 'shipping_phone', 'notes'
+        ]
+        widgets = {
+            'user': forms.Select(attrs={'class': 'form-select'}),
+            'order_type': forms.Select(attrs={'class': 'form-select'}),
+            'payment_status': forms.Select(attrs={'class': 'form-select'}),
+            'shipping_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'shipping_city': forms.TextInput(attrs={'class': 'form-control'}),
+            'shipping_phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Notas adicionales sobre la orden...'}),
+        }
+        labels = {
+            'user': 'Cliente',
+            'order_type': 'Tipo de Orden',
+            'payment_status': 'Estado de Pago',
+            'shipping_address': 'Dirección de Envío',
+            'shipping_city': 'Ciudad',
+            'shipping_phone': 'Teléfono de Contacto',
+            'notes': 'Notas Adicionales',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filtrar solo usuarios activos para el campo user
+        self.fields['user'].queryset = CustomUser.objects.filter(is_active=True).order_by('first_name', 'last_name')
+        self.fields['user'].empty_label = "Seleccionar cliente..."
+
+
+class OrderStatusUpdateForm(forms.ModelForm):
+    """Formulario para actualizar el estado de una orden"""
+    
+    class Meta:
+        model = Order
+        fields = ['order_status', 'payment_status', 'tracking_number', 'estimated_delivery', 'notes']
+        widgets = {
+            'order_status': forms.Select(attrs={'class': 'form-select'}),
+            'payment_status': forms.Select(attrs={'class': 'form-select'}),
+            'tracking_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Número de seguimiento...'}),
+            'estimated_delivery': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+        labels = {
+            'order_status': 'Estado de la Orden',
+            'payment_status': 'Estado de Pago',
+            'tracking_number': 'Número de Seguimiento',
+            'estimated_delivery': 'Entrega Estimada',
+            'notes': 'Notas',
+        }
+
+
+class OrderItemForm(forms.ModelForm):
+    """Formulario para agregar items a una orden"""
+    
+    class Meta:
+        model = OrderItem
+        fields = ['product', 'quantity', 'price']
+        widgets = {
+            'product': forms.Select(attrs={'class': 'form-select'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        }
+        labels = {
+            'product': 'Producto',
+            'quantity': 'Cantidad',
+            'price': 'Precio Unitario',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filtrar solo productos con stock disponible
+        self.fields['product'].queryset = Product.objects.filter(stock__gt=0).order_by('name')
+        self.fields['product'].empty_label = "Seleccionar producto..."

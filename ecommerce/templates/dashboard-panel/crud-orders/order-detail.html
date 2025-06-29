@@ -222,10 +222,32 @@
                             </select>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary w-100">
+                        <button type="submit" class="btn btn-primary w-100 mb-2">
                             <i class="fas fa-save me-1"></i> Actualizar Estado
                         </button>
                     </form>
+                    
+                    <!-- Botón para contador: Marcar como entregada -->
+                    {% if user.is_staff or user.rol == 'contador' %}
+                        {% if order.order_status != 'delivered' %}
+                            <form method="POST" action="{% url 'marcar-orden-entregada' order.id %}" class="mt-2">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success w-100" 
+                                        onclick="return confirmarEntrega()" 
+                                        id="btn-marcar-entregada">
+                                    <i class="fas fa-check-circle me-1"></i> Marcar como Entregada
+                                    <i class="fas fa-envelope ms-1"></i>
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="alert alert-success mt-2 text-center">
+                                <i class="fas fa-check-circle me-1"></i>
+                                <strong>Orden Entregada</strong>
+                                <br>
+                                <small class="text-muted">Cliente notificado por correo</small>
+                            </div>
+                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
 
@@ -294,4 +316,87 @@
         </div>
     </div>
 </div>
+
+<script>
+function confirmarEntrega() {
+    return Swal.fire({
+        title: '¿Confirmar entrega?',
+        text: 'Se marcará la orden como entregada y se enviará un correo de confirmación al cliente.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="fas fa-check me-1"></i>Sí, marcar como entregada',
+        cancelButtonText: '<i class="fas fa-times me-1"></i>Cancelar',
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+            // Simular envío de correo con animación
+            const btn = document.getElementById('btn-marcar-entregada');
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Procesando...';
+                btn.disabled = true;
+            }
+            return true;
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Mostrar animación de envío de correo antes de enviar el formulario
+            Swal.fire({
+                title: 'Procesando entrega...',
+                html: `
+                    <div class="d-flex flex-column align-items-center">
+                        <div class="mb-3">
+                            <i class="fas fa-truck fa-3x text-primary mb-2"></i>
+                            <div>Marcando orden como entregada...</div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-envelope fa-2x text-success me-2"></i>
+                            <div class="text-start">
+                                <div class="fw-bold">Enviando notificación...</div>
+                                <small class="text-muted">Correo de confirmación al cliente</small>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            }).then(() => {
+                // Enviar el formulario después de la animación
+                document.querySelector('form[action*="marcar-entregada"]').submit();
+            });
+            return false; // Prevenir envío inmediato del formulario
+        } else {
+            // Restaurar botón si se cancela
+            const btn = document.getElementById('btn-marcar-entregada');
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-check-circle me-1"></i> Marcar como Entregada <i class="fas fa-envelope ms-1"></i>';
+                btn.disabled = false;
+            }
+            return false;
+        }
+    });
+}
+
+// Agregar estilos para mejorar la apariencia
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar animación de hover al botón de entrega
+    const btnEntrega = document.getElementById('btn-marcar-entregada');
+    if (btnEntrega) {
+        btnEntrega.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 4px 8px rgba(40, 167, 69, 0.3)';
+        });
+        btnEntrega.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+        });
+    }
+});
+</script>
+
 {% endblock %}
